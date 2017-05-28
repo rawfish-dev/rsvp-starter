@@ -1,0 +1,107 @@
+
+/* Header */
+:global(.header) {
+    display: table;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: url(/static/images/077A1023_landing.jpg) no-repeat center center scroll;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+/* Callout */
+:global(.callout) {
+    display: table;
+    width: 100%;
+    height: 400px;
+    color: #fff;
+    background: url(/static/images/ballroom.jpg) no-repeat center center scroll;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+/* Details related */
+:global(.details-bg) {
+  color: #fff;
+  background-color: #444;
+}
+
+:global(.text-dark) {
+  color: #444;
+}
+
+/* RSVP */
+:global(.rsvp-form) {
+    background: url(/static/images/city_blur.jpg) no-repeat center center scroll;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    background-size: cover;
+    -o-background-size: cover;
+}
+
+:global(.temp-background) {
+  background-color: darkgrey;
+}
+
+/* Font related */
+:global(.landing-title) {
+  font: 90px/0.9 'Great Vibes', Helvetica, sans-serif;
+  color: #444;
+  text-shadow: 4px 4px 3px rgba(0,0,0,0.1);
+}
+
+:global(.fade-in-5) {
+  -webkit-animation: fadein 5s; /* Safari, Chrome and Opera > 12.1 */
+     -moz-animation: fadein 5s; /* Firefox < 16 */
+      -ms-animation: fadein 5s; /* Internet Explorer */
+       -o-animation: fadein 5s; /* Opera < 12.1 */
+          animation: fadein 5s;
+}
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Firefox < 16 */
+@-moz-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Safari, Chrome and Opera > 12.1 */
+@-webkit-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Internet Explorer */
+@-ms-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Opera < 12.1 */
+@-o-keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+:global(.landing-sub-title) {
+  font: 40px 'Great Vibes', Helvetica, sans-serif;
+  color: #333;
+  text-shadow: 4px 4px 3px rgba(0,0,0,0.1);
+}
+
+:global(.form-error) {
+  text-align: right;
+  color: red;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  padding-right: 5px;
+}

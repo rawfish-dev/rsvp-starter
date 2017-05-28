@@ -1,0 +1,7 @@
+development:
+    driver: postgres
+    open: user=postgres host=localhost dbname=wedding_rsvp_development sslmode=disable
+
+test:
+    driver: postgres
+    open: user=postgres host=localhost dbname=wedding_rsvp_test sslmode=disable
