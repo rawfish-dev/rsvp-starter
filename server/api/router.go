@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/cache"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/jwt"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/session"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
+	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
+	"github.com/rawfish-dev/rsvp-starter/server/services/session"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
@@ -40,7 +40,7 @@ func (a *API) InitRoutes() {
 		apiNameSpace.GET("/p_rsvps/:id", guestGetRSVP)
 	}
 
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	jwtService := jwt.NewService(baseService, loadedConfig.JWT)

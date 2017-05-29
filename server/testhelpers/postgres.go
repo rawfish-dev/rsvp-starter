@@ -6,21 +6,21 @@ import (
 	"database/sql"
 	"log"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/postgres"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 
 	"gopkg.in/gorp.v1"
 )
 
 func NewTestPostgresService() postgres.PostgresServiceProvider {
-	testPostgresConfig := config.TestConfig().Postgres
+	testPostgresConfig := config.LoadConfig().Postgres
 	testBaseService := NewTestBaseService()
 
 	return postgres.NewService(testBaseService, testPostgresConfig)
 }
 
 func TruncateTestPostgresDB() {
-	testPostgresConfig := config.TestConfig().Postgres
+	testPostgresConfig := config.LoadConfig().Postgres
 
 	dbConnection, err := sql.Open("postgres", testPostgresConfig.URL)
 	if err != nil {

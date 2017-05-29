@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/jwt"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/session"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
+	"github.com/rawfish-dev/rsvp-starter/server/services/session"
 
 	"github.com/gin-gonic/gin"
 )

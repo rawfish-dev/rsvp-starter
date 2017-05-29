@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
 )
 
 type Storage interface {

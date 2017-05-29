@@ -3,10 +3,10 @@ package guest
 import (
 	"fmt"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/postgres"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/utils"
-	serviceErrors "github.com/rawfish-dev/react-redux-basics/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
+	"github.com/rawfish-dev/rsvp-starter/server/utils"
 )
 
 const (

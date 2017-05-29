@@ -1,11 +1,11 @@
 package session
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/cache"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/jwt"
-	serviceErrors "github.com/rawfish-dev/react-redux-basics/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
+	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
 )
 
 type service struct {
@@ -27,12 +27,13 @@ func (s *service) CreateWithExpiry(username string) (authToken string, err error
 	additionalClaims := make(map[string]string)
 	additionalClaims["username"] = username
 
-	authToken, err = s.jwtService.GenerateAuthToken(additionalClaims, s.sessionConfig.DurationSeconds)
+	authToken, err = s.jwtService.GenerateAuthToken(additionalClaims, s.sessionConfig.Duration)
 	if err != nil {
 		return "", err
 	}
 
-	err = s.cacheService.SetWithExpiry(username, authToken, s.sessionConfig.DurationSeconds)
+	expiryInSeconds := int(s.sessionConfig.Duration.Seconds())
+	err = s.cacheService.SetWithExpiry(username, authToken, expiryInSeconds)
 	if err != nil {
 		s.baseService.Errorf("session service - unable to set auth token with expiry in cache due to %v", err)
 		return "", err

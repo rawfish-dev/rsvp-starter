@@ -5,19 +5,19 @@ import (
 	"net/http"
 	"strconv"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/guest"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/postgres"
-	serviceErrors "github.com/rawfish-dev/react-redux-basics/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/services/guest"
+	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 )
 
 func createCategory(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -50,7 +50,7 @@ func createCategory(c *gin.Context) {
 }
 
 func listCategories(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -68,7 +68,7 @@ func listCategories(c *gin.Context) {
 }
 
 func updateCategory(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -107,7 +107,7 @@ func updateCategory(c *gin.Context) {
 }
 
 func deleteCategory(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
-	serviceErrors "github.com/rawfish-dev/react-redux-basics/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 
 	gjwt "github.com/dgrijalva/jwt-go"
 )
@@ -20,14 +20,14 @@ func NewService(baseService *base.Service, jwtConfig config.JWTConfig) JWTServic
 	return &service{baseService, jwtConfig}
 }
 
-func (s *service) GenerateAuthToken(additionalClaims map[string]string, expiryInSeconds int) (authToken string, err error) {
-	if expiryInSeconds <= 0 {
+func (s *service) GenerateAuthToken(additionalClaims map[string]string, duration time.Duration) (authToken string, err error) {
+	if duration.Seconds() <= 0 {
 		s.baseService.Error("jwt service - unable to generate JWT as expiry was less than 0")
-		return "", fmt.Errorf("expiry time must be more than 0, was %v", expiryInSeconds)
+		return "", fmt.Errorf("expiry time must be more than 0, was %v", duration.Seconds())
 	}
 
 	currentTime := time.Now()
-	expiryTime := currentTime.Add(time.Duration(expiryInSeconds) * time.Second)
+	expiryTime := currentTime.Add(duration)
 
 	baseJWT := gjwt.New(gjwt.GetSigningMethod("HS256"))
 

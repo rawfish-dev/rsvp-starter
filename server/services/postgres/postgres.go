@@ -9,8 +9,8 @@ import (
 	"reflect"
 	"sync"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
 	"gopkg.in/gorp.v1"
 )

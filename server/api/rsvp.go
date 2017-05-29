@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/guest"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/postgres"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/security"
-	serviceErrors "github.com/rawfish-dev/react-redux-basics/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/services/guest"
+	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
+	"github.com/rawfish-dev/rsvp-starter/server/services/security"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
@@ -20,7 +20,7 @@ import (
 
 // The handler for creating RSVPs not requiring authentication
 func guestCreateRSVP(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	securityService := security.NewService(baseService)
@@ -113,7 +113,7 @@ func guestCreateRSVP(c *gin.Context) {
 
 // The handler for fetching their own RSVPs not requiring authentication
 func guestGetRSVP(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -179,7 +179,7 @@ func guestGetRSVP(c *gin.Context) {
 }
 
 func createRSVP(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -212,7 +212,7 @@ func createRSVP(c *gin.Context) {
 }
 
 func listRSVPs(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -230,7 +230,7 @@ func listRSVPs(c *gin.Context) {
 }
 
 func updateRSVP(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -269,7 +269,7 @@ func updateRSVP(c *gin.Context) {
 }
 
 func deleteRSVP(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)

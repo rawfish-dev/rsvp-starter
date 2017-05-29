@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/testhelpers"
+	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
 	"testing"
 )

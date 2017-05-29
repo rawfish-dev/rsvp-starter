@@ -3,8 +3,8 @@ package jwt_test
 import (
 	"time"
 
-	. "bitbucket.org/rawfish-dev/wedding-rsvp/server/services/jwt"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/testhelpers"
+	. "github.com/rawfish-dev/rsvp-starter/server/services/jwt"
+	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -96,7 +96,7 @@ var _ = Describe("Jwt", func() {
 			claims, err := testJWTService.ParseToken(token)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims["userID"].(string)).To(Equal("123123"))
-			Expect(claims["iss"].(string)).To(Equal("weddingRSVPTest"))
+			Expect(claims["iss"].(string)).To(Equal("rsvp_starter_test"))
 			Expect(claims["exp"]).ToNot(BeNil())
 			Expect(claims["iat"]).ToNot(BeNil())
 		})

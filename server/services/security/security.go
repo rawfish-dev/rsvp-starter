@@ -3,7 +3,7 @@ package security
 import (
 	"strings"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
 	"golang.org/x/crypto/bcrypt"
 )

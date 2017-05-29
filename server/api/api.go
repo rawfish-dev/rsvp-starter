@@ -3,7 +3,7 @@ package api
 import (
 	"sync"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +21,7 @@ func NewAPI(apiConfig config.Config) *API {
 	once.Do(func() {
 		singletonAPI = &API{
 			Router:   gin.New(),
-			HttpPort: apiConfig.HttpPort,
+			HttpPort: apiConfig.HTTPPort,
 		}
 	})
 

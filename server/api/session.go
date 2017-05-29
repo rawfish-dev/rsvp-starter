@@ -4,20 +4,20 @@ import (
 	"net/http"
 	"strings"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/cache"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/jwt"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/security"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/session"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
+	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
+	"github.com/rawfish-dev/rsvp-starter/server/services/security"
+	"github.com/rawfish-dev/rsvp-starter/server/services/session"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 )
 
 func createSession(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	jwtService := jwt.NewService(baseService, loadedConfig.JWT)
@@ -63,7 +63,7 @@ func createSession(c *gin.Context) {
 }
 
 func destroySession(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	jwtService := jwt.NewService(baseService, loadedConfig.JWT)

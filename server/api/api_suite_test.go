@@ -8,9 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	. "bitbucket.org/rawfish-dev/wedding-rsvp/server/api"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/testhelpers"
+	. "github.com/rawfish-dev/rsvp-starter/server/api"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,8 +28,8 @@ var _ = BeforeEach(func() {
 })
 
 var _ = BeforeSuite(func() {
-	testConfig := config.TestConfig()
-	testAPI = NewAPI(*testConfig)
+	testConfig := config.LoadConfig()
+	testAPI = NewAPI(testConfig)
 	testAPI.InitRoutes()
 })
 

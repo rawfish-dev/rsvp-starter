@@ -3,8 +3,8 @@ package cache_test
 import (
 	"time"
 
-	. "bitbucket.org/rawfish-dev/wedding-rsvp/server/services/cache"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/testhelpers"
+	. "github.com/rawfish-dev/rsvp-starter/server/services/cache"
+	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

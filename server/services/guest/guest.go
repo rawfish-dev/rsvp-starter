@@ -1,8 +1,8 @@
 package guest
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/interfaces"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 )
 
 type service struct {

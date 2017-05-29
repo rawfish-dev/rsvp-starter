@@ -1,7 +1,7 @@
 package twilio
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
 	"github.com/sfreiberg/gotwilio"
 )

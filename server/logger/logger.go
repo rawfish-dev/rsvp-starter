@@ -3,7 +3,7 @@ package logger
 import (
 	"fmt"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/interfaces"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/satori/go.uuid"

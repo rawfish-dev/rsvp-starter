@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/interfaces"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 )
 
 type PostgresServiceProvider interface {

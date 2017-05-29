@@ -1,7 +1,7 @@
 package testhelpers
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/cache"
+	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
 )
 
 func NewTestCacheService() cache.CacheServiceProvider {

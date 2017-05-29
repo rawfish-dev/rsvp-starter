@@ -1,8 +1,8 @@
 package testhelpers
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/logger"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/logger"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
 	"github.com/satori/go.uuid"
 )

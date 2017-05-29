@@ -3,9 +3,9 @@ package testhelpers
 import (
 	"fmt"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/guest"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/utils"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/services/guest"
+	"github.com/rawfish-dev/rsvp-starter/server/utils"
 
 	"github.com/satori/go.uuid"
 )

@@ -5,20 +5,20 @@ import (
 	"net/http"
 	"strconv"
 
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/domain"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/base"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/guest"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/postgres"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/services/twilio"
-	serviceErrors "github.com/rawfish-dev/react-redux-basics/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/services/guest"
+	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
+	"github.com/rawfish-dev/rsvp-starter/server/services/twilio"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 )
 
 func sendInvitationSMS(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -77,7 +77,7 @@ func sendInvitationSMS(c *gin.Context) {
 }
 
 func createInvitation(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -110,7 +110,7 @@ func createInvitation(c *gin.Context) {
 }
 
 func listInvitations(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -128,7 +128,7 @@ func listInvitations(c *gin.Context) {
 }
 
 func updateInvitation(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
@@ -167,7 +167,7 @@ func updateInvitation(c *gin.Context) {
 }
 
 func deleteInvitation(c *gin.Context) {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)

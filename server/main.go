@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/api"
-	"bitbucket.org/rawfish-dev/wedding-rsvp/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/api"
+	"github.com/rawfish-dev/rsvp-starter/server/config"
 )
 
 func main() {
-	loadedConfig := config.Load()
+	loadedConfig := config.LoadConfig()
 
-	reactReduxBasicsAPI := api.NewAPI(*loadedConfig)
+	reactReduxBasicsAPI := api.NewAPI(loadedConfig)
 
 	reactReduxBasicsAPI.Run()
 }
