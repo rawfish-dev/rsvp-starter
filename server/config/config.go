@@ -2,147 +2,110 @@ package config
 
 import (
 	"os"
+	"strconv"
+	"sync"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
 
+const (
+	defaultHTTPPort = 6001
+	sessionDuration = time.Minute * 20
+)
+
+// Config holds necessary config values.
 type Config struct {
-	DebugEnabled bool           `json:"debugEnabled"`
-	HttpPort     int            `json:"httpPort"`
-	Postgres     PostgresConfig `json:"postgres"`
-	Session      SessionConfig  `json:"session"`
-	JWT          JWTConfig      `json:"jwt"`
+	HTTPPort int
+	Postgres PostgresConfig
+	Session  SessionConfig
+	JWT      JWTConfig
 }
 
+// PostgresConfig contains the connection URL and other DB options.
 type PostgresConfig struct {
-	URL            string `json:"url"`
-	MaxIdle        int    `json:"maxIdle"`
-	MaxConnections int    `json:"maxConnections"`
+	URL            string
+	MaxIdle        int
+	MaxConnections int
 }
 
+// SessionConfig contains the duration of each valid session.
 type SessionConfig struct {
-	DurationSeconds int `json:"durationSeconds"`
+	Duration time.Duration
 }
 
+// JWTConfig contains the config values required to create valid JWTs.
 type JWTConfig struct {
-	HMACSecret  string `json:"hmacSecret"`
-	TokenIssuer string `json:"tokenIssuer"`
+	HMACSecret  string
+	TokenIssuer string
 }
 
 var (
-	config *Config
-
-	validEnvironments = []string{"test", "development", "production"}
+	once   sync.Once
+	config Config
 )
 
-func Load() *Config {
-
-	if config == nil {
-
-		// Check the environment and load the corresponding file
-		currentEnvironment := getEnvironment()
-
-		logrus.Infof("config - loading configuration for %s", currentEnvironment)
-
-		switch currentEnvironment {
-		case "test":
-			config = TestConfig()
-
-		case "development":
-			config = developmentConfig()
-
-		case "production":
-			config = productionConfig()
-
-		default:
-			config = developmentConfig()
+// LoadConfig instantiates a singleton object that holds necessary config values.
+// This function panics if required environment values are not set properly.
+func LoadConfig() Config {
+	once.Do(func() {
+		config = Config{
+			HTTPPort: parseHTTPPort(),
+			Postgres: loadPostgresConfig(),
+			Session:  loadSessionConfig(),
+			JWT:      loadJWTConfig(),
 		}
-	}
+	})
 
 	return config
 }
 
-func getEnvironment() string {
-
-	currentEnvironment := os.Getenv("WEDDING_RSVP_ENV")
-
-	for _, env := range validEnvironments {
-		if currentEnvironment == env {
-			return currentEnvironment
-		}
+func parseHTTPPort() int {
+	httpPortStr, ok := os.LookupEnv("HTTP_PORT")
+	if !ok || httpPortStr == "" {
+		return defaultHTTPPort
 	}
 
-	// Return default
-	return "development"
+	httpPort, err := strconv.ParseInt(httpPortStr, 10, 32)
+	if err != nil {
+		logrus.Fatalf("HTTP_PORT value '%s' could not be parsed due to %s", httpPortStr, err.Error())
+	}
+
+	return int(httpPort)
 }
 
-func TestConfig() *Config {
-	logrus.Info("Loading test configuration...")
+func loadPostgresConfig() PostgresConfig {
+	postgresURL, ok := os.LookupEnv("POSTGRES_URL")
+	if !ok {
+		logrus.Fatal("POSTGRES_URL not set")
+	}
 
-	return &Config{
-		HttpPort: 6001,
-		Postgres: PostgresConfig{
-			URL:            "postgres://postgres@localhost/wedding_rsvp_test?sslmode=disable",
-			MaxIdle:        15,
-			MaxConnections: 15,
-		},
-		Session: SessionConfig{
-			DurationSeconds: 600,
-		},
-		JWT: JWTConfig{
-			HMACSecret:  "secret",
-			TokenIssuer: "weddingRSVPTest",
-		},
+	return PostgresConfig{
+		URL:            postgresURL,
+		MaxIdle:        15,
+		MaxConnections: 15,
 	}
 }
 
-func developmentConfig() *Config {
-	logrus.Info("Loading development configuration...")
-
-	// Temporarily use in code values
-	return &Config{
-		HttpPort: 5000,
-		Postgres: PostgresConfig{
-			URL:            "postgres://postgres@localhost/wedding_rsvp_development?sslmode=disable",
-			MaxIdle:        15,
-			MaxConnections: 15,
-		},
-		Session: SessionConfig{
-			DurationSeconds: 3600,
-		},
-		JWT: JWTConfig{
-			HMACSecret:  "reallysecret",
-			TokenIssuer: "weddingRSVPDevelopment",
-		},
+func loadSessionConfig() SessionConfig {
+	return SessionConfig{
+		Duration: sessionDuration,
 	}
 }
 
-func productionConfig() *Config {
-	logrus.Info("Loading production configuration...")
-
-	productionDBURL, ok := os.LookupEnv("POSTGRES_URL")
-	if !ok || productionDBURL == "" {
-		panic("POSTGRES_URL not set")
-	}
-
+func loadJWTConfig() JWTConfig {
 	hmacSecret, ok := os.LookupEnv("HMAC_SECRET")
-	if !ok || hmacSecret == "" {
-		panic("HMAC_SECRET not set")
+	if !ok {
+		logrus.Fatal("HMAC_SECRET not set")
 	}
 
-	return &Config{
-		HttpPort: 5000,
-		Postgres: PostgresConfig{
-			URL:            productionDBURL,
-			MaxIdle:        15,
-			MaxConnections: 15,
-		},
-		Session: SessionConfig{
-			DurationSeconds: 3600,
-		},
-		JWT: JWTConfig{
-			HMACSecret:  hmacSecret,
-			TokenIssuer: "weddingRSVPProduction",
-		},
+	tokenIssuer, ok := os.LookupEnv("TOKEN_ISSUER")
+	if !ok {
+		logrus.Fatal("TOKEN_ISSUER not set")
+	}
+
+	return JWTConfig{
+		HMACSecret:  hmacSecret,
+		TokenIssuer: tokenIssuer,
 	}
 }
