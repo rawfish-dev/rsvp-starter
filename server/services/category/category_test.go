@@ -1,12 +1,12 @@
-package guest_test
+package category_test
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	. "github.com/rawfish-dev/rsvp-starter/server/services/category"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
-	. "github.com/rawfish-dev/rsvp-starter/server/services/guest"
 	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
 	. "github.com/onsi/ginkgo"

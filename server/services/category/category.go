@@ -1,9 +1,12 @@
-package guest
+package category
 
 import (
 	"fmt"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
+	"github.com/rawfish-dev/rsvp-starter/server/services"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 	"github.com/rawfish-dev/rsvp-starter/server/utils"
@@ -14,13 +17,27 @@ const (
 	TagMaxLength = 100
 )
 
+var _ services.CategoryServiceProvider = new(service)
+
+type service struct {
+	baseService     *base.Service
+	categoryStorage interfaces.CategoryStorage
+}
+
+func NewService(baseService *base.Service, categoryStorage interfaces.CategoryStorage) *service {
+	return &service{
+		baseService:     baseService,
+		categoryStorage: categoryStorage,
+	}
+}
+
 func (s *service) CreateCategory(req *domain.CategoryCreateRequest) (*domain.Category, error) {
 	errorMessages := validateCategoryCreateRequest(req)
 	if len(errorMessages) > 0 {
 		return nil, serviceErrors.NewValidationError(errorMessages)
 	}
 
-	newCategory, err := s.guestStorage.InsertCategory(req)
+	newCategory, err := s.categoryStorage.InsertCategory(req)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresCategoryTagUniqueConstraintError:
@@ -35,7 +52,7 @@ func (s *service) CreateCategory(req *domain.CategoryCreateRequest) (*domain.Cat
 }
 
 func (s *service) ListCategories() ([]domain.Category, error) {
-	categories, err := s.guestStorage.FindAllCategories()
+	categories, err := s.categoryStorage.FindAllCategories()
 	if err != nil {
 		s.baseService.Error("guest service - unable to list all categories")
 		return nil, serviceErrors.NewGeneralServiceError()
@@ -50,7 +67,7 @@ func (s *service) UpdateCategory(req *domain.CategoryUpdateRequest) (*domain.Cat
 		return nil, serviceErrors.NewValidationError(errorMessages)
 	}
 
-	category, err := s.guestStorage.FindCategoryByID(req.ID)
+	category, err := s.categoryStorage.FindCategoryByID(req.ID)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:
@@ -62,7 +79,7 @@ func (s *service) UpdateCategory(req *domain.CategoryUpdateRequest) (*domain.Cat
 
 	category.Tag = req.Tag
 
-	updatedCategory, err := s.guestStorage.UpdateCategory(category)
+	updatedCategory, err := s.categoryStorage.UpdateCategory(category)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresCategoryTagUniqueConstraintError:
@@ -77,7 +94,7 @@ func (s *service) UpdateCategory(req *domain.CategoryUpdateRequest) (*domain.Cat
 }
 
 func (s *service) DeleteCategory(categoryID int64) error {
-	err := s.guestStorage.DeleteCategoryByID(categoryID)
+	err := s.categoryStorage.DeleteCategoryByID(categoryID)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:

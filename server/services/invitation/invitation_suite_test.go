@@ -1,4 +1,4 @@
-package guest_test
+package invitation_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -9,9 +9,9 @@ import (
 	"testing"
 )
 
-func TestGuest(t *testing.T) {
+func TestInvitation(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Guest Suite")
+	RunSpecs(t, "Invitation Suite")
 }
 
 var _ = BeforeEach(func() {

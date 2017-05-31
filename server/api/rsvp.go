@@ -9,8 +9,9 @@ import (
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
-	"github.com/rawfish-dev/rsvp-starter/server/services/guest"
+	"github.com/rawfish-dev/rsvp-starter/server/services/invitation"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
+	"github.com/rawfish-dev/rsvp-starter/server/services/rsvp"
 	"github.com/rawfish-dev/rsvp-starter/server/services/security"
 
 	"github.com/Sirupsen/logrus"
@@ -25,7 +26,7 @@ func guestCreateRSVP(c *gin.Context) {
 	baseService := base.NewService(logrus.New())
 	securityService := security.NewService(baseService)
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	rsvpService := rsvp.NewService(baseService, postgresService)
 
 	var rsvpCreateRequest domain.RSVPCreateRequest
 	err := c.BindJSON(&rsvpCreateRequest)
@@ -44,10 +45,10 @@ func guestCreateRSVP(c *gin.Context) {
 	// For private invitations, check if the user has already RSVP-ed
 	if rsvpCreateRequest.InvitationPrivateID != "" {
 
-		privateRSVP, err := guestService.RetrievePrivateRSVP(rsvpCreateRequest.InvitationPrivateID)
+		privateRSVP, err := rsvpService.RetrievePrivateRSVP(rsvpCreateRequest.InvitationPrivateID)
 		if err != nil {
 			switch err.(type) {
-			case guest.RSVPNotFoundError:
+			case rsvp.RSVPNotFoundError:
 				// Do nothing, means guest has not RSVP-ed yet
 			default:
 				// All other errors should be considered failures
@@ -57,7 +58,7 @@ func guestCreateRSVP(c *gin.Context) {
 			}
 
 			// Proceed to RSVP
-			newRSVP, err := guestService.CreateRSVP(&rsvpCreateRequest)
+			newRSVP, err := rsvpService.CreateRSVP(&rsvpCreateRequest)
 			if err != nil {
 				switch err.(type) {
 				case serviceErrors.ValidationError:
@@ -93,7 +94,7 @@ func guestCreateRSVP(c *gin.Context) {
 	rsvpCreateRequest.InvitationPrivateID = uuid.NewV4().String() // Give public rsvps a private id so they can reference it later
 
 	// Proceed to RSVP
-	newRSVP, err := guestService.CreateRSVP(&rsvpCreateRequest)
+	newRSVP, err := rsvpService.CreateRSVP(&rsvpCreateRequest)
 	if err != nil {
 		switch err.(type) {
 		case serviceErrors.ValidationError:
@@ -117,7 +118,8 @@ func guestGetRSVP(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	invitationService := invitation.NewService(baseService, postgresService)
+	rsvpService := rsvp.NewService(baseService, postgresService)
 
 	// Only private invitations can be fetched
 	invitationPrivateID := c.Param("id")
@@ -128,16 +130,16 @@ func guestGetRSVP(c *gin.Context) {
 	}
 
 	// If a RSVP record can be found, the guest has already RSVP-ed
-	privateRSVP, err := guestService.RetrievePrivateRSVP(invitationPrivateID)
+	privateRSVP, err := rsvpService.RetrievePrivateRSVP(invitationPrivateID)
 	if err != nil {
 		switch err.(type) {
-		case guest.RSVPNotFoundError:
+		case rsvp.RSVPNotFoundError:
 
 			// In the event the RSVP cannot be found, check if the invitation exists
-			invitation, err := guestService.RetrieveInvitationByPrivateID(invitationPrivateID)
+			retrievedInvitation, err := invitationService.RetrieveInvitationByPrivateID(invitationPrivateID)
 			if err != nil {
 				switch err.(type) {
-				case guest.InvitationNotFoundError:
+				case invitation.InvitationNotFoundError:
 					c.AbortWithStatus(http.StatusNotFound)
 					return
 				}
@@ -150,16 +152,16 @@ func guestGetRSVP(c *gin.Context) {
 			// Invitation exists but the guest has not yet RSVP-ed
 			privateRSVP = &domain.RSVP{
 				BaseRSVP: domain.BaseRSVP{
-					FullName:          invitation.Greeting,
+					FullName:          retrievedInvitation.Greeting,
 					Attending:         true,
-					GuestCount:        invitation.MaximumGuestCount,
+					GuestCount:        retrievedInvitation.MaximumGuestCount,
 					SpecialDiet:       false,
 					Remarks:           "",
-					MobilePhoneNumber: invitation.MobilePhoneNumber,
+					MobilePhoneNumber: retrievedInvitation.MobilePhoneNumber,
 				},
-				InvitationPrivateID: invitation.PrivateID,
+				InvitationPrivateID: retrievedInvitation.PrivateID,
 				Completed:           false,
-				UpdatedAt:           invitation.UpdatedAt,
+				UpdatedAt:           retrievedInvitation.UpdatedAt,
 			}
 
 			c.JSON(http.StatusOK, privateRSVP)
@@ -183,7 +185,7 @@ func createRSVP(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	rsvpService := rsvp.NewService(baseService, postgresService)
 
 	var rsvpCreateRequest domain.RSVPCreateRequest
 	err := c.BindJSON(&rsvpCreateRequest)
@@ -193,7 +195,7 @@ func createRSVP(c *gin.Context) {
 		return
 	}
 
-	newRSVP, err := guestService.CreateRSVP(&rsvpCreateRequest)
+	newRSVP, err := rsvpService.CreateRSVP(&rsvpCreateRequest)
 	if err != nil {
 		switch err.(type) {
 		case serviceErrors.ValidationError:
@@ -216,9 +218,9 @@ func listRSVPs(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	rsvpService := rsvp.NewService(baseService, postgresService)
 
-	allRSVPs, err := guestService.ListRSVPs()
+	allRSVPs, err := rsvpService.ListRSVPs()
 	if err != nil {
 		baseService.Errorf("rsvp api - unable to list all rsvps due to %v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -234,7 +236,7 @@ func updateRSVP(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	rsvpService := rsvp.NewService(baseService, postgresService)
 
 	var rsvpUpdateRequest domain.RSVPUpdateRequest
 	err := c.BindJSON(&rsvpUpdateRequest)
@@ -250,7 +252,7 @@ func updateRSVP(c *gin.Context) {
 		return
 	}
 
-	updatedRSVP, err := guestService.UpdateRSVP(&rsvpUpdateRequest)
+	updatedRSVP, err := rsvpService.UpdateRSVP(&rsvpUpdateRequest)
 	if err != nil {
 		switch err.(type) {
 		case serviceErrors.ValidationError:
@@ -273,7 +275,7 @@ func deleteRSVP(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	rsvpService := rsvp.NewService(baseService, postgresService)
 
 	rsvpIDStr := c.Param("id")
 	rsvpID, err := strconv.ParseInt(rsvpIDStr, 10, 64)
@@ -283,10 +285,10 @@ func deleteRSVP(c *gin.Context) {
 		return
 	}
 
-	err = guestService.DeleteRSVP(rsvpID)
+	err = rsvpService.DeleteRSVP(rsvpID)
 	if err != nil {
 		switch err.(type) {
-		case guest.RSVPNotFoundError:
+		case rsvp.RSVPNotFoundError:
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}

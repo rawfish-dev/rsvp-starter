@@ -58,7 +58,6 @@ func (a *API) InitRoutes() {
 		apiNameSpace.PUT("/categories/:id", updateCategory)
 		apiNameSpace.DELETE("/categories/:id", deleteCategory)
 
-		apiNameSpace.POST("/send_invitation", sendInvitationSMS)
 		apiNameSpace.POST("/invitations", createInvitation)
 		apiNameSpace.GET("/invitations", listInvitations)
 		apiNameSpace.PUT("/invitations/:id", updateInvitation)

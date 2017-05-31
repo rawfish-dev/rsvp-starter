@@ -1,13 +1,40 @@
-package guest
+package rsvp
 
 import (
 	"fmt"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
+	"github.com/rawfish-dev/rsvp-starter/server/services"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 	"github.com/rawfish-dev/rsvp-starter/server/utils"
 )
+
+const (
+	GreetingMinLength          = 2
+	GreetingMaxLength          = 100
+	MaximumGuestCountMin       = 1
+	MaximumGuestCountMax       = 10
+	NoteMaxLength              = 500
+	MobilePhoneNumberMinLength = 8
+	MobilePhoneNumberMaxLength = 20
+)
+
+var _ services.RSVPServiceProvider = new(service)
+
+type service struct {
+	baseService *base.Service
+	rsvpStorage interfaces.RSVPStorage
+}
+
+func NewService(baseService *base.Service, rsvpStorage interfaces.RSVPStorage) *service {
+	return &service{
+		baseService: baseService,
+		rsvpStorage: rsvpStorage,
+	}
+}
 
 func (s *service) CreateRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error) {
 	errorMessages := validateRSVPCreateRequest(req)
@@ -15,7 +42,7 @@ func (s *service) CreateRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error
 		return nil, serviceErrors.NewValidationError(errorMessages)
 	}
 
-	newRSVP, err := s.guestStorage.InsertRSVP(req)
+	newRSVP, err := s.rsvpStorage.InsertRSVP(req)
 	if err != nil {
 		errorMessage := []string{err.Error()}
 
@@ -31,7 +58,7 @@ func (s *service) CreateRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error
 }
 
 func (s *service) ListRSVPs() ([]domain.RSVP, error) {
-	rsvps, err := s.guestStorage.FindAllRSVPs()
+	rsvps, err := s.rsvpStorage.FindAllRSVPs()
 	if err != nil {
 		s.baseService.Error("guest service - unable to list all rsvps")
 		return nil, serviceErrors.NewGeneralServiceError()
@@ -46,7 +73,7 @@ func (s *service) UpdateRSVP(req *domain.RSVPUpdateRequest) (*domain.RSVP, error
 		return nil, serviceErrors.NewValidationError(errorMessages)
 	}
 
-	rsvp, err := s.guestStorage.FindRSVPByID(req.ID)
+	rsvp, err := s.rsvpStorage.FindRSVPByID(req.ID)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:
@@ -63,7 +90,7 @@ func (s *service) UpdateRSVP(req *domain.RSVPUpdateRequest) (*domain.RSVP, error
 	rsvp.Remarks = req.Remarks
 	rsvp.MobilePhoneNumber = req.MobilePhoneNumber
 
-	updatedInvitation, err := s.guestStorage.UpdateRSVP(rsvp)
+	updatedInvitation, err := s.rsvpStorage.UpdateRSVP(rsvp)
 	if err != nil {
 		// TODO:: add specific service error handling
 
@@ -74,7 +101,7 @@ func (s *service) UpdateRSVP(req *domain.RSVPUpdateRequest) (*domain.RSVP, error
 }
 
 func (s *service) DeleteRSVP(rsvpID int64) error {
-	err := s.guestStorage.DeleteRSVPByID(rsvpID)
+	err := s.rsvpStorage.DeleteRSVPByID(rsvpID)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:
@@ -88,7 +115,7 @@ func (s *service) DeleteRSVP(rsvpID int64) error {
 }
 
 func (s *service) RetrievePrivateRSVP(invitationPrivateID string) (*domain.RSVP, error) {
-	rsvp, err := s.guestStorage.FindRSVPByInvitationPrivateID(invitationPrivateID)
+	rsvp, err := s.rsvpStorage.FindRSVPByInvitationPrivateID(invitationPrivateID)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:

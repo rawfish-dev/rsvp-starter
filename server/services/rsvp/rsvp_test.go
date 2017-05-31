@@ -1,4 +1,4 @@
-package guest_test
+package rsvp_test
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
-	. "github.com/rawfish-dev/rsvp-starter/server/services/guest"
+	. "github.com/rawfish-dev/rsvp-starter/server/services/rsvp"
 	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
 	. "github.com/onsi/ginkgo"

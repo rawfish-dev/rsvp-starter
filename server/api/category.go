@@ -8,8 +8,8 @@ import (
 	"github.com/rawfish-dev/rsvp-starter/server/config"
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+	"github.com/rawfish-dev/rsvp-starter/server/services/category"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
-	"github.com/rawfish-dev/rsvp-starter/server/services/guest"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 
 	"github.com/Sirupsen/logrus"
@@ -21,7 +21,7 @@ func createCategory(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	categoryService := category.NewService(baseService, postgresService)
 
 	var categoryCreateRequest domain.CategoryCreateRequest
 	err := c.BindJSON(&categoryCreateRequest)
@@ -31,7 +31,7 @@ func createCategory(c *gin.Context) {
 		return
 	}
 
-	newCategory, err := guestService.CreateCategory(&categoryCreateRequest)
+	newCategory, err := categoryService.CreateCategory(&categoryCreateRequest)
 	if err != nil {
 		switch err.(type) {
 		case serviceErrors.ValidationError:
@@ -54,9 +54,9 @@ func listCategories(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	categoryService := category.NewService(baseService, postgresService)
 
-	allCategories, err := guestService.ListCategories()
+	allCategories, err := categoryService.ListCategories()
 	if err != nil {
 		baseService.Errorf("category api - unable to list all categories due to %v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func updateCategory(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	categoryService := category.NewService(baseService, postgresService)
 
 	var categoryUpdateRequest domain.CategoryUpdateRequest
 	err := c.BindJSON(&categoryUpdateRequest)
@@ -88,7 +88,7 @@ func updateCategory(c *gin.Context) {
 		return
 	}
 
-	updatedCategory, err := guestService.UpdateCategory(&categoryUpdateRequest)
+	updatedCategory, err := categoryService.UpdateCategory(&categoryUpdateRequest)
 	if err != nil {
 		switch err.(type) {
 		case serviceErrors.ValidationError:
@@ -111,7 +111,7 @@ func deleteCategory(c *gin.Context) {
 
 	baseService := base.NewService(logrus.New())
 	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	guestService := guest.NewService(baseService, postgresService)
+	categoryService := category.NewService(baseService, postgresService)
 
 	categoryIDStr := c.Param("id")
 	categoryID, err := strconv.ParseInt(categoryIDStr, 10, 64)
@@ -121,10 +121,10 @@ func deleteCategory(c *gin.Context) {
 		return
 	}
 
-	err = guestService.DeleteCategory(categoryID)
+	err = categoryService.DeleteCategory(categoryID)
 	if err != nil {
 		switch err.(type) {
-		case guest.CategoryNotFoundError:
+		case category.CategoryNotFoundError:
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
