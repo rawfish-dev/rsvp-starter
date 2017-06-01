@@ -4,13 +4,6 @@ import (
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 )
 
-type Storage interface {
-	Close() error
-	CategoryStorage
-	InvitationStorage
-	RSVPStorage
-}
-
 type CategoryStorage interface {
 	InsertCategory(*domain.CategoryCreateRequest) (*domain.Category, error)
 	FindCategoryByID(categoryID int64) (*domain.Category, error)

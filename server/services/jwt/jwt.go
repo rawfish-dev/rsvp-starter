@@ -5,18 +5,21 @@ import (
 	"time"
 
 	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 
 	gjwt "github.com/dgrijalva/jwt-go"
 )
 
+var _ interfaces.JWTServiceProvider = new(service)
+
 type service struct {
 	baseService *base.Service
 	jwtConfig   config.JWTConfig
 }
 
-func NewService(baseService *base.Service, jwtConfig config.JWTConfig) JWTServiceProvider {
+func NewService(baseService *base.Service, jwtConfig config.JWTConfig) *service {
 	return &service{baseService, jwtConfig}
 }
 

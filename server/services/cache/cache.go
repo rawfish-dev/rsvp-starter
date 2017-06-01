@@ -5,8 +5,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 )
+
+var _ interfaces.CacheServiceProvider = new(service)
 
 type service struct {
 	baseService *base.Service
@@ -22,7 +25,7 @@ type valueWrapper struct {
 var cacheService *service
 var once sync.Once
 
-func NewService(baseService *base.Service) CacheServiceProvider {
+func NewService(baseService *base.Service) *service {
 	once.Do(func() {
 		cacheService = &service{
 			baseService: baseService,

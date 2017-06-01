@@ -10,7 +10,6 @@ import (
 
 	. "github.com/rawfish-dev/rsvp-starter/server/api"
 	"github.com/rawfish-dev/rsvp-starter/server/config"
-	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,10 +21,6 @@ func TestApi(t *testing.T) {
 }
 
 var testAPI *API
-
-var _ = BeforeEach(func() {
-	testhelpers.TruncateTestPostgresDB()
-})
 
 var _ = BeforeSuite(func() {
 	testConfig := config.LoadConfig()

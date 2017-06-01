@@ -1,4 +1,4 @@
-package cache
+package interfaces
 
 type CacheServiceProvider interface {
 	Get(key string) (value string, err error)

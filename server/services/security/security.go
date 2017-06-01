@@ -3,10 +3,13 @@ package security
 import (
 	"strings"
 
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+var _ interfaces.SecurityServiceProvider
 
 type service struct {
 	baseService *base.Service
@@ -20,7 +23,7 @@ var (
 	}
 )
 
-func NewService(baseService *base.Service) SecurityServiceProvider {
+func NewService(baseService *base.Service) *service {
 	return &service{baseService}
 }
 

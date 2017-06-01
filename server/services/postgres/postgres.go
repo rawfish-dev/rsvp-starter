@@ -10,10 +10,15 @@ import (
 	"sync"
 
 	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
 	"gopkg.in/gorp.v1"
 )
+
+var _ interfaces.CategoryStorage = new(service)
+var _ interfaces.InvitationStorage = new(service)
+var _ interfaces.RSVPStorage = new(service)
 
 type service struct {
 	baseService *base.Service
@@ -23,7 +28,7 @@ type service struct {
 var singletonService *service
 var once sync.Once
 
-func NewService(baseService *base.Service, postgresConfig config.PostgresConfig) PostgresServiceProvider {
+func NewService(baseService *base.Service, postgresConfig config.PostgresConfig) *service {
 	once.Do(func() {
 		dbConnection, err := sql.Open("postgres", postgresConfig.URL)
 		if err != nil {

@@ -4,8 +4,7 @@ import (
 	"net/http"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
-	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
-	"github.com/rawfish-dev/rsvp-starter/server/services/session"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +14,7 @@ const (
 )
 
 // SessionMiddleware rejects requests without the correct auth header value and packs it into the context if present
-func SessionMiddleware(authService jwt.JWTServiceProvider, sessionService session.SessionServiceProvider) gin.HandlerFunc {
+func SessionMiddleware(authService interfaces.JWTServiceProvider, sessionService interfaces.SessionServiceProvider) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Check if the auth header is present
 		authToken := c.Request.Header.Get(authHeaderKey)

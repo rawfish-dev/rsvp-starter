@@ -5,7 +5,6 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
@@ -17,7 +16,7 @@ const (
 	TagMaxLength = 100
 )
 
-var _ services.CategoryServiceProvider = new(service)
+var _ interfaces.CategoryServiceProvider = new(service)
 
 type service struct {
 	baseService     *base.Service

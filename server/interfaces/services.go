@@ -1,8 +1,27 @@
-package services
+package interfaces
 
 import (
+	"time"
+
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 )
+
+type SessionServiceProvider interface {
+	CreateWithExpiry(username string) (authToken string, err error)
+	IsSessionValid(authToken string) (valid bool, err error)
+	Destroy(authToken string) (err error)
+}
+
+type JWTServiceProvider interface {
+	GenerateAuthToken(additionalClaims map[string]string, duration time.Duration) (authToken string, err error)
+	ParseToken(token string) (claims map[string]interface{}, err error)
+	IsAuthTokenValid(authToken string) (valid bool)
+}
+
+type SecurityServiceProvider interface {
+	ValidateCredentials(username, password string) (valid bool)
+	VerifyReCAPTCHA(token string) (valid bool)
+}
 
 type CategoryServiceProvider interface {
 	CreateCategory(*domain.CategoryCreateRequest) (*domain.Category, error)

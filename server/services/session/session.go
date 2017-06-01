@@ -2,23 +2,25 @@ package session
 
 import (
 	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/base"
-	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
 )
 
+var _ interfaces.SessionServiceProvider = new(service)
+
 type service struct {
 	baseService   *base.Service
 	sessionConfig config.SessionConfig
-	jwtService    jwt.JWTServiceProvider
-	cacheService  cache.CacheServiceProvider
+	jwtService    interfaces.JWTServiceProvider
+	cacheService  interfaces.CacheServiceProvider
 }
 
 func NewService(baseService *base.Service,
 	sessionConfig config.SessionConfig,
-	jwtService jwt.JWTServiceProvider,
-	cacheService cache.CacheServiceProvider) SessionServiceProvider {
+	jwtService interfaces.JWTServiceProvider,
+	cacheService interfaces.CacheServiceProvider) *service {
 	return &service{baseService, sessionConfig, jwtService, cacheService}
 }
 
