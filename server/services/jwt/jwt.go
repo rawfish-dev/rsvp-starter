@@ -6,26 +6,28 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/config"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 
 	gjwt "github.com/dgrijalva/jwt-go"
+	"golang.org/x/net/context"
 )
 
 var _ interfaces.JWTServiceProvider = new(service)
 
 type service struct {
-	baseService *base.Service
-	jwtConfig   config.JWTConfig
+	ctx       context.Context
+	jwtConfig config.JWTConfig
 }
 
-func NewService(baseService *base.Service, jwtConfig config.JWTConfig) *service {
-	return &service{baseService, jwtConfig}
+func NewService(ctx context.Context, jwtConfig config.JWTConfig) *service {
+	return &service{ctx, jwtConfig}
 }
 
 func (s *service) GenerateAuthToken(additionalClaims map[string]string, duration time.Duration) (authToken string, err error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	if duration.Seconds() <= 0 {
-		s.baseService.Error("jwt service - unable to generate JWT as expiry was less than 0")
+		ctxLogger.Error("jwt service - unable to generate JWT as expiry was less than 0")
 		return "", fmt.Errorf("expiry time must be more than 0, was %v", duration.Seconds())
 	}
 
@@ -49,6 +51,8 @@ func (s *service) GenerateAuthToken(additionalClaims map[string]string, duration
 }
 
 func (s *service) ParseToken(token string) (claims map[string]interface{}, err error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	baseJWT, err := s.parseJWTString(token)
 
 	switch err.(type) {
@@ -60,32 +64,32 @@ func (s *service) ParseToken(token string) (claims map[string]interface{}, err e
 
 		switch validationErr.Errors {
 		case gjwt.ValidationErrorMalformed:
-			s.baseService.Warnf("jwt service - jwt is malformed - %v", validationErr.Errors)
+			ctxLogger.Warnf("jwt service - jwt is malformed - %v", validationErr.Errors)
 
 		case gjwt.ValidationErrorUnverifiable:
-			s.baseService.Warnf("jwt service - jwt is unverifiable - %v", validationErr.Errors)
+			ctxLogger.Warnf("jwt service - jwt is unverifiable - %v", validationErr.Errors)
 
 		case gjwt.ValidationErrorSignatureInvalid:
-			s.baseService.Warnf("jwt service - jwt signature is invalid - %v", validationErr.Errors)
+			ctxLogger.Warnf("jwt service - jwt signature is invalid - %v", validationErr.Errors)
 
 		case gjwt.ValidationErrorExpired:
-			s.baseService.Warnf("jwt service - jwt has expired - %v", validationErr.Errors)
+			ctxLogger.Warnf("jwt service - jwt has expired - %v", validationErr.Errors)
 
 		default:
-			s.baseService.Warnf("jwt service - jwt could not be parsed - %v", validationErr.Errors)
+			ctxLogger.Warnf("jwt service - jwt could not be parsed - %v", validationErr.Errors)
 		}
 
 		return nil, NewJWTInvalidError()
 
 	default:
-		s.baseService.Errorf("jwt service - jwt could not be parsed - %v", err.Error())
+		ctxLogger.Errorf("jwt service - jwt could not be parsed - %v", err.Error())
 		return nil, serviceErrors.NewGeneralServiceError()
 	}
 
 	// JWT had no errors, proceed to check issuer
 	jwtClaimedIssuer := baseJWT.Claims["iss"].(string)
 	if jwtClaimedIssuer != s.jwtConfig.TokenIssuer {
-		s.baseService.Errorf("jwt service - jwt was valid but issued by %v instead of %v", jwtClaimedIssuer, s.jwtConfig.TokenIssuer)
+		ctxLogger.Errorf("jwt service - jwt was valid but issued by %v instead of %v", jwtClaimedIssuer, s.jwtConfig.TokenIssuer)
 		return nil, NewJWTInvalidError()
 	}
 
@@ -93,9 +97,11 @@ func (s *service) ParseToken(token string) (claims map[string]interface{}, err e
 }
 
 func (s *service) IsAuthTokenValid(token string) (valid bool) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	baseJWT, err := s.parseJWTString(token)
 	if err != nil {
-		s.baseService.Warnf("jwt service - jwt could not be parsed due to %v", err)
+		ctxLogger.Warnf("jwt service - jwt could not be parsed due to %v", err)
 		return false
 	}
 

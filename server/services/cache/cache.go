@@ -6,15 +6,16 @@ import (
 	"time"
 
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
+
+	"golang.org/x/net/context"
 )
 
 var _ interfaces.CacheServiceProvider = new(service)
 
 type service struct {
-	baseService *base.Service
-	storage     map[string]valueWrapper
-	mutex       *sync.Mutex
+	ctx     context.Context
+	storage map[string]valueWrapper
+	mutex   *sync.Mutex
 }
 
 type valueWrapper struct {
@@ -25,12 +26,12 @@ type valueWrapper struct {
 var cacheService *service
 var once sync.Once
 
-func NewService(baseService *base.Service) *service {
+func NewService(ctx context.Context) *service {
 	once.Do(func() {
 		cacheService = &service{
-			baseService: baseService,
-			storage:     make(map[string]valueWrapper),
-			mutex:       &sync.Mutex{},
+			ctx:     ctx,
+			storage: make(map[string]valueWrapper),
+			mutex:   &sync.Mutex{},
 		}
 	})
 
@@ -46,6 +47,8 @@ func (s *service) Get(key string) (value string, err error) {
 }
 
 func (s *service) SetWithExpiry(key string, value string, expiryInSeconds int) (err error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	if key == "" {
 		// TODO:: Make into a service error
 		return fmt.Errorf("cache keys cannot be blank")
@@ -79,7 +82,7 @@ func (s *service) SetWithExpiry(key string, value string, expiryInSeconds int) (
 			return
 		}
 
-		s.baseService.Infof("cache service - expiring key %v", storageKey)
+		ctxLogger.Infof("cache service - expiring key %v", storageKey)
 
 		delete(s.storage, storageKey)
 	}(key, timestamp)

@@ -5,41 +5,61 @@ import (
 	"strings"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
+	"github.com/rawfish-dev/rsvp-starter/server/mock"
+	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	. "github.com/rawfish-dev/rsvp-starter/server/services/category"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
-	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
+	"github.com/Sirupsen/logrus"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Category", func() {
 
-	var testGuestService GuestServiceProvider
+	var ctrl *gomock.Controller
+	var mockCategoryStorage *mock_interfaces.MockCategoryStorage
+	var testCategoryService interfaces.CategoryServiceProvider
 	var req *domain.CategoryCreateRequest
 
 	BeforeEach(func() {
-		testGuestService = testhelpers.NewTestGuestService()
+		ctrl = gomock.NewController(GinkgoT())
+
+		testBaseService := base.NewService(logrus.New())
+		mockCategoryStorage = mock_interfaces.NewMockCategoryStorage(ctrl)
+		testCategoryService = NewService(testBaseService, mockCategoryStorage)
 		req = &domain.CategoryCreateRequest{
 			Tag: "some tag",
 		}
 	})
 
+	AfterEach(func() {
+		ctrl.Finish()
+	})
+
 	Context("creation", func() {
 
 		It("should create a category given valid values", func() {
-			newCategory, err := testGuestService.CreateCategory(req)
+			mockCategoryStorage.EXPECT().InsertCategory(req).Return(&domain.Category{
+				ID:  1,
+				Tag: "some tag",
+			}, nil)
+
+			newCategory, err := testCategoryService.CreateCategory(req)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(newCategory).ToNot(BeNil())
+			Expect(newCategory.ID).To(BeNumerically("==", 1))
 			Expect(newCategory.Tag).To(Equal("some tag"))
 			Expect(newCategory.Total).To(Equal(0))
 		})
 
 		It("should not allow categories with duplicate tags", func() {
-			newCategory, err := testGuestService.CreateCategory(req)
+			newCategory, err := testCategoryService.CreateCategory(req)
 			Expect(err).ToNot(HaveOccurred())
 
-			newCategory, err = testGuestService.CreateCategory(req)
+			newCategory, err = testCategoryService.CreateCategory(req)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
 			Expect(err.Error()).To(Equal("category tag already exists"))
@@ -49,7 +69,7 @@ var _ = Describe("Category", func() {
 		It("should return an error if the tag is too short", func() {
 			req.Tag = ""
 
-			newCategory, err := testGuestService.CreateCategory(req)
+			newCategory, err := testCategoryService.CreateCategory(req)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
 			Expect(err.Error()).To(Equal(
@@ -60,7 +80,7 @@ var _ = Describe("Category", func() {
 		It("should return an error if the tag is too long", func() {
 			req.Tag = strings.Repeat("a", TagMaxLength+1)
 
-			newCategory, err := testGuestService.CreateCategory(req)
+			newCategory, err := testCategoryService.CreateCategory(req)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
 			Expect(err.Error()).To(Equal(
@@ -72,18 +92,18 @@ var _ = Describe("Category", func() {
 	Context("retrieval", func() {
 
 		It("should return all categories sorted alphabetically by tags", func() {
-			_, err := testGuestService.CreateCategory(req)
+			_, err := testCategoryService.CreateCategory(req)
 			Expect(err).ToNot(HaveOccurred())
 
 			req.Tag = "some tag 3"
-			_, err = testGuestService.CreateCategory(req)
+			_, err = testCategoryService.CreateCategory(req)
 			Expect(err).ToNot(HaveOccurred())
 
 			req.Tag = "some tag 2"
-			_, err = testGuestService.CreateCategory(req)
+			_, err = testCategoryService.CreateCategory(req)
 			Expect(err).ToNot(HaveOccurred())
 
-			allCategories, err := testGuestService.ListCategories()
+			allCategories, err := testCategoryService.ListCategories()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(allCategories).To(HaveLen(3))
 			Expect(allCategories[0].Tag).To(Equal("some tag 3"))
@@ -95,7 +115,7 @@ var _ = Describe("Category", func() {
 		})
 
 		It("should return an empty slice if no categories exist", func() {
-			allCategories, err := testGuestService.ListCategories()
+			allCategories, err := testCategoryService.ListCategories()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(allCategories).To(BeEmpty())
 		})
@@ -108,7 +128,7 @@ var _ = Describe("Category", func() {
 
 		BeforeEach(func() {
 			var err error
-			createdCategory, err = testGuestService.CreateCategory(req)
+			createdCategory, err = testCategoryService.CreateCategory(req)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(createdCategory).ToNot(BeNil())
 			Expect(createdCategory.ID).ToNot(BeZero())
@@ -120,7 +140,7 @@ var _ = Describe("Category", func() {
 		})
 
 		It("should update a tag given valid values", func() {
-			updatedCategory, err := testGuestService.UpdateCategory(updateReq)
+			updatedCategory, err := testCategoryService.UpdateCategory(updateReq)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(updatedCategory).ToNot(BeNil())
 			Expect(updatedCategory.ID).To(Equal(createdCategory.ID))
@@ -131,14 +151,14 @@ var _ = Describe("Category", func() {
 		It("should return an error if the category id cannot be found", func() {
 			updateReq.ID = 123123123123
 
-			updatedCategory, err := testGuestService.UpdateCategory(updateReq)
+			updatedCategory, err := testCategoryService.UpdateCategory(updateReq)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(CategoryNotFoundError{}))
 			Expect(updatedCategory).To(BeNil())
 		})
 
 		It("should not allow updating categories with duplicate tags", func() {
-			newCategory, err := testGuestService.CreateCategory(req)
+			newCategory, err := testCategoryService.CreateCategory(req)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
 			Expect(err.Error()).To(Equal("category tag already exists"))
@@ -148,7 +168,7 @@ var _ = Describe("Category", func() {
 		It("should return an error while updating if the tag is too short", func() {
 			updateReq.Tag = ""
 
-			newCategory, err := testGuestService.UpdateCategory(updateReq)
+			newCategory, err := testCategoryService.UpdateCategory(updateReq)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
 			Expect(err.Error()).To(Equal(
@@ -159,7 +179,7 @@ var _ = Describe("Category", func() {
 		It("should return an error while updating if the tag is too long", func() {
 			updateReq.Tag = strings.Repeat("a", TagMaxLength+1)
 
-			newCategory, err := testGuestService.UpdateCategory(updateReq)
+			newCategory, err := testCategoryService.UpdateCategory(updateReq)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
 			Expect(err.Error()).To(Equal(
@@ -178,7 +198,7 @@ var _ = Describe("Category", func() {
 
 		BeforeEach(func() {
 			var err error
-			createdCategory, err = testGuestService.CreateCategory(req)
+			createdCategory, err = testCategoryService.CreateCategory(req)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(createdCategory).ToNot(BeNil())
 			Expect(createdCategory.ID).ToNot(BeZero())
@@ -186,16 +206,16 @@ var _ = Describe("Category", func() {
 
 		It("should allow deleting of a category that has no invitations linked to it", func() {
 			// Ensure that the category exists
-			allCategories, err := testGuestService.ListCategories()
+			allCategories, err := testCategoryService.ListCategories()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(allCategories).To(HaveLen(1))
 			Expect(allCategories[0].ID).To(Equal(createdCategory.ID))
 
-			err = testGuestService.DeleteCategory(createdCategory.ID)
+			err = testCategoryService.DeleteCategory(createdCategory.ID)
 			Expect(err).ToNot(HaveOccurred())
 
 			// Ensure that the category no longer exists
-			allCategories, err = testGuestService.ListCategories()
+			allCategories, err = testCategoryService.ListCategories()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(allCategories).To(HaveLen(0))
 		})
@@ -205,7 +225,7 @@ var _ = Describe("Category", func() {
 		})
 
 		It("should return an error if the category id cannot be found", func() {
-			err := testGuestService.DeleteCategory(123123123)
+			err := testCategoryService.DeleteCategory(123123123)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(BeAssignableToTypeOf(CategoryNotFoundError{}))
 		})

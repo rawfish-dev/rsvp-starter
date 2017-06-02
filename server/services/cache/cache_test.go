@@ -3,19 +3,25 @@ package cache_test
 import (
 	"time"
 
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	. "github.com/rawfish-dev/rsvp-starter/server/services/cache"
-	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
+	"github.com/Sirupsen/logrus"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"golang.org/x/net/context"
 )
 
 var _ = Describe("Cache", func() {
 
-	var testCacheService CacheServiceProvider
+	var testCacheService interfaces.CacheServiceProvider
 
 	BeforeEach(func() {
-		testCacheService = testhelpers.NewTestCacheService()
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
+
+		testCacheService = NewService(ctx)
 		Expect(testCacheService.Flush()).To(Succeed())
 	})
 

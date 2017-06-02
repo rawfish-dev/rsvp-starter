@@ -14,7 +14,7 @@ const (
 )
 
 // SessionMiddleware rejects requests without the correct auth header value and packs it into the context if present
-func SessionMiddleware(authService interfaces.JWTServiceProvider, sessionService interfaces.SessionServiceProvider) gin.HandlerFunc {
+func SessionMiddleware(sessionService interfaces.SessionServiceProvider) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Check if the auth header is present
 		authToken := c.Request.Header.Get(authHeaderKey)

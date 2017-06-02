@@ -4,14 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/rawfish-dev/rsvp-starter/server/config"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
-	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
-	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
-	"github.com/rawfish-dev/rsvp-starter/server/services/session"
-
-	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/net/context"
 )
 
 func (a *API) InitRoutes() {
@@ -34,24 +28,18 @@ func (a *API) InitRoutes() {
 	// No auth required
 	{
 		apiNameSpace.GET("/healthcheck", healthcheck)
-		apiNameSpace.POST("/sessions", createSession)
+		apiNameSpace.POST("/sessions", createSession(a))
 
 		apiNameSpace.POST("/p_rsvps", guestCreateRSVP)
 		apiNameSpace.GET("/p_rsvps/:id", guestGetRSVP)
 	}
 
-	loadedConfig := config.LoadConfig()
-
-	baseService := base.NewService(logrus.New())
-	jwtService := jwt.NewService(baseService, loadedConfig.JWT)
-	cacheService := cache.NewService(baseService)
-	sessionService := session.NewService(baseService, loadedConfig.Session, jwtService, cacheService)
-
-	apiNameSpace.Use(SessionMiddleware(jwtService, sessionService))
+	ctx := context.Background()
+	apiNameSpace.Use(SessionMiddleware(a.SessionServiceFactory(ctx)))
 
 	// Auth required
 	{
-		apiNameSpace.DELETE("/sessions", destroySession)
+		apiNameSpace.DELETE("/sessions", destroySession(a))
 
 		apiNameSpace.POST("/categories", createCategory)
 		apiNameSpace.GET("/categories", listCategories)
@@ -74,5 +62,5 @@ func (a *API) Run() {
 	a.InitRoutes()
 
 	// Begin blocking to listen for incoming requests
-	a.Router.Run(fmt.Sprintf(":%v", a.HttpPort))
+	a.Router.Run(fmt.Sprintf(":%v", a.HTTPPort))
 }

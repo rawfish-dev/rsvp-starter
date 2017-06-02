@@ -3,28 +3,31 @@ package session
 import (
 	"github.com/rawfish-dev/rsvp-starter/server/config"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
+
+	"golang.org/x/net/context"
 )
 
 var _ interfaces.SessionServiceProvider = new(service)
 
 type service struct {
-	baseService   *base.Service
+	ctx           context.Context
 	sessionConfig config.SessionConfig
 	jwtService    interfaces.JWTServiceProvider
 	cacheService  interfaces.CacheServiceProvider
 }
 
-func NewService(baseService *base.Service,
+func NewService(ctx context.Context,
 	sessionConfig config.SessionConfig,
 	jwtService interfaces.JWTServiceProvider,
 	cacheService interfaces.CacheServiceProvider) *service {
-	return &service{baseService, sessionConfig, jwtService, cacheService}
+	return &service{ctx, sessionConfig, jwtService, cacheService}
 }
 
 func (s *service) CreateWithExpiry(username string) (authToken string, err error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	// Store username as an additional claim
 	additionalClaims := make(map[string]string)
 	additionalClaims["username"] = username
@@ -37,7 +40,7 @@ func (s *service) CreateWithExpiry(username string) (authToken string, err error
 	expiryInSeconds := int(s.sessionConfig.Duration.Seconds())
 	err = s.cacheService.SetWithExpiry(username, authToken, expiryInSeconds)
 	if err != nil {
-		s.baseService.Errorf("session service - unable to set auth token with expiry in cache due to %v", err)
+		ctxLogger.Errorf("session service - unable to set auth token with expiry in cache due to %v", err)
 		return "", err
 	}
 
@@ -45,27 +48,29 @@ func (s *service) CreateWithExpiry(username string) (authToken string, err error
 }
 
 func (s *service) IsSessionValid(authToken string) (valid bool, err error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	claims, err := s.jwtService.ParseToken(authToken)
 	if err != nil {
 		switch err.(type) {
 		case jwt.JWTInvalidError:
-			s.baseService.Warn("session service - auth token was invalid")
+			ctxLogger.Warn("session service - auth token was invalid")
 			return false, nil
 		}
 
-		s.baseService.Errorf("session service - unable to parse auth token due to %v", err)
+		ctxLogger.Errorf("session service - unable to parse auth token due to %v", err)
 		return false, serviceErrors.NewGeneralServiceError()
 	}
 
 	username, ok := claims["username"]
 	if !ok {
-		s.baseService.Error("session service - could not find username claim in auth token")
+		ctxLogger.Error("session service - could not find username claim in auth token")
 		return false, nil
 	}
 
 	exists, err := s.cacheService.Exists(username.(string))
 	if err != nil {
-		s.baseService.Errorf("session service - unable to check if session is active for %v due to %v", username, err)
+		ctxLogger.Errorf("session service - unable to check if session is active for %v due to %v", username, err)
 		return false, serviceErrors.NewGeneralServiceError()
 	}
 	if !exists {
@@ -78,15 +83,17 @@ func (s *service) IsSessionValid(authToken string) (valid bool, err error) {
 }
 
 func (s *service) Destroy(authToken string) (err error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	claims, err := s.jwtService.ParseToken(authToken)
 	if err != nil {
-		s.baseService.Errorf("session service - unable to parse auth token due to %v", err)
+		ctxLogger.Errorf("session service - unable to parse auth token due to %v", err)
 		return
 	}
 
 	username, ok := claims["username"]
 	if !ok {
-		s.baseService.Error("session service - could not find username claim in auth token")
+		ctxLogger.Error("session service - could not find username claim in auth token")
 		return
 	}
 
