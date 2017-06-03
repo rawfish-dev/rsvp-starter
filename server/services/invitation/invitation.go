@@ -63,7 +63,7 @@ func (s *service) CreateInvitation(req *domain.InvitationCreateRequest) (*domain
 }
 
 func (s *service) ListInvitations(rsvps []domain.RSVP) ([]domain.Invitation, error) {
-	invitations, err := s.invitationStorage.FindAllInvitations()
+	invitations, err := s.invitationStorage.ListInvitations()
 	if err != nil {
 		s.baseService.Error("guest service - unable to list all invitations")
 		return nil, serviceErrors.NewGeneralServiceError()
@@ -118,7 +118,8 @@ func (s *service) UpdateInvitation(req *domain.InvitationUpdateRequest) (*domain
 		errorMessage := []string{err.Error()}
 
 		switch err.(type) {
-		case postgres.PostgresInvitationGreetingUniqueConstraintError, postgres.PostgresInvitationMobilePhoneNumberUniqueConstraintError:
+		case postgres.PostgresInvitationGreetingUniqueConstraintError,
+			postgres.PostgresInvitationMobilePhoneNumberUniqueConstraintError:
 			return nil, serviceErrors.NewValidationError(errorMessage)
 		}
 
@@ -128,8 +129,18 @@ func (s *service) UpdateInvitation(req *domain.InvitationUpdateRequest) (*domain
 	return updatedInvitation, nil
 }
 
-func (s *service) DeleteInvitation(invitationID int64) error {
-	err := s.invitationStorage.DeleteInvitationByID(invitationID)
+func (s *service) DeleteInvitationByID(invitationID int64) error {
+	invitation, err := s.invitationStorage.FindInvitationByID(invitationID)
+	if err != nil {
+		switch err.(type) {
+		case postgres.PostgresRecordNotFoundError:
+			return NewInvitationNotFoundError()
+		}
+
+		return serviceErrors.NewGeneralServiceError()
+	}
+
+	err = s.invitationStorage.DeleteInvitation(invitation)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:

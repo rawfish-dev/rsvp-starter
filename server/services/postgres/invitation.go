@@ -153,7 +153,7 @@ func (s *service) FindInvitationByPrivateID(privateID string) (*domain.Invitatio
 	return domainInvitation, nil
 }
 
-func (s *service) FindAllInvitations() ([]domain.Invitation, error) {
+func (s *service) ListInvitations() ([]domain.Invitation, error) {
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM invitations
@@ -213,21 +213,10 @@ func (s *service) UpdateInvitation(domainInvitation *domain.Invitation) (*domain
 	return domainInvitation, nil
 }
 
-func (s *service) DeleteInvitationByID(invitationID int64) error {
-	retrievedInvitation, err := s.FindInvitationByID(invitationID)
+func (s *service) DeleteInvitation(invitation *domain.Invitation) error {
+	_, err := s.gorpDB.Delete(invitation)
 	if err != nil {
-		return err
-	}
-
-	invitation := &invitation{
-		baseModel: baseModel{
-			ID: retrievedInvitation.ID,
-		},
-	}
-
-	_, err = s.gorpDB.Delete(invitation)
-	if err != nil {
-		s.baseService.Errorf("postgres service - unable to delete invitation with id %v due to %v", invitationID, err)
+		s.baseService.Errorf("postgres service - unable to delete invitation with id %v due to %v", invitation.ID, err)
 		return NewPostgresOperationError()
 	}
 

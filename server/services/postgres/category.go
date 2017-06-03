@@ -82,7 +82,7 @@ func (s *service) FindCategoryByID(categoryID int64) (*domain.Category, error) {
 	return domainCategory, nil
 }
 
-func (s *service) FindAllCategories() ([]domain.Category, error) {
+func (s *service) ListCategories() ([]domain.Category, error) {
 	query := fmt.Sprintf(`
 		SELECT %v, COUNT(invitations.id) as total
 		FROM categories
@@ -129,21 +129,10 @@ func (s *service) UpdateCategory(domainCategory *domain.Category) (*domain.Categ
 	return domainCategory, nil
 }
 
-func (s *service) DeleteCategoryByID(categoryID int64) error {
-	retrievedCategory, err := s.FindCategoryByID(categoryID)
+func (s *service) DeleteCategory(domainCategory *domain.Category) error {
+	_, err := s.gorpDB.Delete(domainCategory)
 	if err != nil {
-		return err
-	}
-
-	category := &category{
-		baseModel: baseModel{
-			ID: retrievedCategory.ID,
-		},
-	}
-
-	_, err = s.gorpDB.Delete(category)
-	if err != nil {
-		s.baseService.Errorf("postgres service - unable to delete category with id %v due to %v", categoryID, err)
+		s.baseService.Errorf("postgres service - unable to delete category with id %v due to %v", domainCategory.ID, err)
 		return NewPostgresOperationError()
 	}
 

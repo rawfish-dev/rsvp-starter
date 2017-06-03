@@ -148,7 +148,7 @@ func (s *service) FindRSVPByInvitationPrivateID(invitationPrivateID string) (*do
 	return domainRSVP, nil
 }
 
-func (s *service) FindAllRSVPs() ([]domain.RSVP, error) {
+func (s *service) ListRSVPs() ([]domain.RSVP, error) {
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM rsvps

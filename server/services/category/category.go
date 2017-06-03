@@ -51,7 +51,7 @@ func (s *service) CreateCategory(req *domain.CategoryCreateRequest) (*domain.Cat
 }
 
 func (s *service) ListCategories() ([]domain.Category, error) {
-	categories, err := s.categoryStorage.FindAllCategories()
+	categories, err := s.categoryStorage.ListCategories()
 	if err != nil {
 		s.baseService.Error("guest service - unable to list all categories")
 		return nil, serviceErrors.NewGeneralServiceError()
@@ -92,8 +92,18 @@ func (s *service) UpdateCategory(req *domain.CategoryUpdateRequest) (*domain.Cat
 	return updatedCategory, nil
 }
 
-func (s *service) DeleteCategory(categoryID int64) error {
-	err := s.categoryStorage.DeleteCategoryByID(categoryID)
+func (s *service) DeleteCategoryByID(categoryID int64) error {
+	category, err := s.categoryStorage.FindCategoryByID(categoryID)
+	if err != nil {
+		switch err.(type) {
+		case postgres.PostgresRecordNotFoundError:
+			return NewCategoryNotFoundError()
+		}
+
+		return serviceErrors.NewGeneralServiceError()
+	}
+
+	err = s.categoryStorage.DeleteCategory(category)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:
