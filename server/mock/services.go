@@ -210,14 +210,14 @@ func (_mr *_MockCategoryServiceProviderRecorder) UpdateCategory(arg0 interface{}
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateCategory", arg0)
 }
 
-func (_m *MockCategoryServiceProvider) DeleteCategory(categoryID int64) error {
-	ret := _m.ctrl.Call(_m, "DeleteCategory", categoryID)
+func (_m *MockCategoryServiceProvider) DeleteCategoryByID(categoryID int64) error {
+	ret := _m.ctrl.Call(_m, "DeleteCategoryByID", categoryID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockCategoryServiceProviderRecorder) DeleteCategory(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteCategory", arg0)
+func (_mr *_MockCategoryServiceProviderRecorder) DeleteCategoryByID(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteCategoryByID", arg0)
 }
 
 // Mock of InvitationServiceProvider interface
@@ -274,14 +274,14 @@ func (_mr *_MockInvitationServiceProviderRecorder) UpdateInvitation(arg0 interfa
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateInvitation", arg0)
 }
 
-func (_m *MockInvitationServiceProvider) DeleteInvitation(invitationID int64) error {
-	ret := _m.ctrl.Call(_m, "DeleteInvitation", invitationID)
+func (_m *MockInvitationServiceProvider) DeleteInvitationByID(invitationID int64) error {
+	ret := _m.ctrl.Call(_m, "DeleteInvitationByID", invitationID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockInvitationServiceProviderRecorder) DeleteInvitation(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteInvitation", arg0)
+func (_mr *_MockInvitationServiceProviderRecorder) DeleteInvitationByID(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteInvitationByID", arg0)
 }
 
 func (_m *MockInvitationServiceProvider) RetrieveInvitationByPrivateID(privateID string) (*domain.Invitation, error) {

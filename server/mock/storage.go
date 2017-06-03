@@ -51,15 +51,15 @@ func (_mr *_MockCategoryStorageRecorder) FindCategoryByID(arg0 interface{}) *gom
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "FindCategoryByID", arg0)
 }
 
-func (_m *MockCategoryStorage) FindAllCategories() ([]domain.Category, error) {
-	ret := _m.ctrl.Call(_m, "FindAllCategories")
+func (_m *MockCategoryStorage) ListCategories() ([]domain.Category, error) {
+	ret := _m.ctrl.Call(_m, "ListCategories")
 	ret0, _ := ret[0].([]domain.Category)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockCategoryStorageRecorder) FindAllCategories() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "FindAllCategories")
+func (_mr *_MockCategoryStorageRecorder) ListCategories() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListCategories")
 }
 
 func (_m *MockCategoryStorage) UpdateCategory(_param0 *domain.Category) (*domain.Category, error) {
@@ -73,14 +73,14 @@ func (_mr *_MockCategoryStorageRecorder) UpdateCategory(arg0 interface{}) *gomoc
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateCategory", arg0)
 }
 
-func (_m *MockCategoryStorage) DeleteCategoryByID(categoryID int64) error {
-	ret := _m.ctrl.Call(_m, "DeleteCategoryByID", categoryID)
+func (_m *MockCategoryStorage) DeleteCategory(_param0 *domain.Category) error {
+	ret := _m.ctrl.Call(_m, "DeleteCategory", _param0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockCategoryStorageRecorder) DeleteCategoryByID(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteCategoryByID", arg0)
+func (_mr *_MockCategoryStorageRecorder) DeleteCategory(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteCategory", arg0)
 }
 
 // Mock of InvitationStorage interface
@@ -137,15 +137,15 @@ func (_mr *_MockInvitationStorageRecorder) FindInvitationByPrivateID(arg0 interf
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "FindInvitationByPrivateID", arg0)
 }
 
-func (_m *MockInvitationStorage) FindAllInvitations() ([]domain.Invitation, error) {
-	ret := _m.ctrl.Call(_m, "FindAllInvitations")
+func (_m *MockInvitationStorage) ListInvitations() ([]domain.Invitation, error) {
+	ret := _m.ctrl.Call(_m, "ListInvitations")
 	ret0, _ := ret[0].([]domain.Invitation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockInvitationStorageRecorder) FindAllInvitations() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "FindAllInvitations")
+func (_mr *_MockInvitationStorageRecorder) ListInvitations() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListInvitations")
 }
 
 func (_m *MockInvitationStorage) UpdateInvitation(_param0 *domain.Invitation) (*domain.Invitation, error) {
@@ -159,14 +159,14 @@ func (_mr *_MockInvitationStorageRecorder) UpdateInvitation(arg0 interface{}) *g
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateInvitation", arg0)
 }
 
-func (_m *MockInvitationStorage) DeleteInvitationByID(invitationID int64) error {
-	ret := _m.ctrl.Call(_m, "DeleteInvitationByID", invitationID)
+func (_m *MockInvitationStorage) DeleteInvitation(_param0 *domain.Invitation) error {
+	ret := _m.ctrl.Call(_m, "DeleteInvitation", _param0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockInvitationStorageRecorder) DeleteInvitationByID(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteInvitationByID", arg0)
+func (_mr *_MockInvitationStorageRecorder) DeleteInvitation(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteInvitation", arg0)
 }
 
 // Mock of RSVPStorage interface
@@ -223,15 +223,15 @@ func (_mr *_MockRSVPStorageRecorder) FindRSVPByInvitationPrivateID(arg0 interfac
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "FindRSVPByInvitationPrivateID", arg0)
 }
 
-func (_m *MockRSVPStorage) FindAllRSVPs() ([]domain.RSVP, error) {
-	ret := _m.ctrl.Call(_m, "FindAllRSVPs")
+func (_m *MockRSVPStorage) ListRSVPs() ([]domain.RSVP, error) {
+	ret := _m.ctrl.Call(_m, "ListRSVPs")
 	ret0, _ := ret[0].([]domain.RSVP)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockRSVPStorageRecorder) FindAllRSVPs() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "FindAllRSVPs")
+func (_mr *_MockRSVPStorageRecorder) ListRSVPs() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "ListRSVPs")
 }
 
 func (_m *MockRSVPStorage) UpdateRSVP(_param0 *domain.RSVP) (*domain.RSVP, error) {
