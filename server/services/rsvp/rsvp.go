@@ -57,9 +57,9 @@ func (s *service) CreateRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error
 }
 
 func (s *service) ListRSVPs() ([]domain.RSVP, error) {
-	rsvps, err := s.rsvpStorage.FindAllRSVPs()
+	rsvps, err := s.rsvpStorage.ListRSVPs()
 	if err != nil {
-		s.baseService.Error("guest service - unable to list all rsvps")
+		s.baseService.Error("rsvp service - unable to list all rsvps")
 		return nil, serviceErrors.NewGeneralServiceError()
 	}
 
@@ -89,6 +89,8 @@ func (s *service) UpdateRSVP(req *domain.RSVPUpdateRequest) (*domain.RSVP, error
 	rsvp.Remarks = req.Remarks
 	rsvp.MobilePhoneNumber = req.MobilePhoneNumber
 
+	fmt.Printf("\nRSVP (1): %+v\n\n", rsvp)
+
 	updatedInvitation, err := s.rsvpStorage.UpdateRSVP(rsvp)
 	if err != nil {
 		// TODO:: add specific service error handling
@@ -99,8 +101,18 @@ func (s *service) UpdateRSVP(req *domain.RSVPUpdateRequest) (*domain.RSVP, error
 	return updatedInvitation, nil
 }
 
-func (s *service) DeleteRSVP(rsvpID int64) error {
-	err := s.rsvpStorage.DeleteRSVPByID(rsvpID)
+func (s *service) DeleteRSVPByID(rsvpID int64) error {
+	rsvp, err := s.rsvpStorage.FindRSVPByID(rsvpID)
+	if err != nil {
+		switch err.(type) {
+		case postgres.PostgresRecordNotFoundError:
+			return NewRSVPNotFoundError()
+		}
+
+		return serviceErrors.NewGeneralServiceError()
+	}
+
+	err = s.rsvpStorage.DeleteRSVP(rsvp)
 	if err != nil {
 		switch err.(type) {
 		case postgres.PostgresRecordNotFoundError:

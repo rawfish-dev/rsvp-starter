@@ -27,5 +27,5 @@ type RSVPStorage interface {
 	FindRSVPByInvitationPrivateID(invitationPrivateID string) (*domain.RSVP, error)
 	ListRSVPs() ([]domain.RSVP, error)
 	UpdateRSVP(*domain.RSVP) (*domain.RSVP, error)
-	DeleteRSVPByID(rsvpID int64) error
+	DeleteRSVP(*domain.RSVP) error
 }

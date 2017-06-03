@@ -285,7 +285,7 @@ func deleteRSVP(c *gin.Context) {
 		return
 	}
 
-	err = rsvpService.DeleteRSVP(rsvpID)
+	err = rsvpService.DeleteRSVPByID(rsvpID)
 	if err != nil {
 		switch err.(type) {
 		case rsvp.RSVPNotFoundError:

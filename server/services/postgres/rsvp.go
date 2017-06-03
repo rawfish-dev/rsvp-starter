@@ -210,21 +210,10 @@ func (s *service) UpdateRSVP(domainRSVP *domain.RSVP) (*domain.RSVP, error) {
 	return domainRSVP, nil
 }
 
-func (s *service) DeleteRSVPByID(rsvpID int64) error {
-	retrievedRSVP, err := s.FindRSVPByID(rsvpID)
+func (s *service) DeleteRSVP(rsvp *domain.RSVP) error {
+	_, err := s.gorpDB.Delete(rsvp)
 	if err != nil {
-		return err
-	}
-
-	rsvp := &rsvp{
-		baseModel: baseModel{
-			ID: retrievedRSVP.ID,
-		},
-	}
-
-	_, err = s.gorpDB.Delete(rsvp)
-	if err != nil {
-		s.baseService.Errorf("postgres service - unable to delete rsvp with id %v due to %v", rsvpID, err)
+		s.baseService.Errorf("postgres service - unable to delete rsvp with id %v due to %v", rsvp.ID, err)
 		return NewPostgresOperationError()
 	}
 

@@ -121,7 +121,7 @@ func deleteCategory(c *gin.Context) {
 		return
 	}
 
-	err = categoryService.DeleteCategory(categoryID)
+	err = categoryService.DeleteCategoryByID(categoryID)
 	if err != nil {
 		switch err.(type) {
 		case category.CategoryNotFoundError:

@@ -53,7 +53,7 @@ func (s *service) CreateCategory(req *domain.CategoryCreateRequest) (*domain.Cat
 func (s *service) ListCategories() ([]domain.Category, error) {
 	categories, err := s.categoryStorage.ListCategories()
 	if err != nil {
-		s.baseService.Error("guest service - unable to list all categories")
+		s.baseService.Error("category service - unable to list all categories")
 		return nil, serviceErrors.NewGeneralServiceError()
 	}
 

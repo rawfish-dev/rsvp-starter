@@ -349,14 +349,14 @@ func (_mr *_MockRSVPServiceProviderRecorder) UpdateRSVP(arg0 interface{}) *gomoc
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "UpdateRSVP", arg0)
 }
 
-func (_m *MockRSVPServiceProvider) DeleteRSVP(rsvpID int64) error {
-	ret := _m.ctrl.Call(_m, "DeleteRSVP", rsvpID)
+func (_m *MockRSVPServiceProvider) DeleteRSVPByID(rsvpID int64) error {
+	ret := _m.ctrl.Call(_m, "DeleteRSVPByID", rsvpID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-func (_mr *_MockRSVPServiceProviderRecorder) DeleteRSVP(arg0 interface{}) *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteRSVP", arg0)
+func (_mr *_MockRSVPServiceProviderRecorder) DeleteRSVPByID(arg0 interface{}) *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "DeleteRSVPByID", arg0)
 }
 
 func (_m *MockRSVPServiceProvider) RetrievePrivateRSVP(invitationPrivateID string) (*domain.RSVP, error) {

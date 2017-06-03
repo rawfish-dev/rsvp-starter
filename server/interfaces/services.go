@@ -43,6 +43,6 @@ type RSVPServiceProvider interface {
 	CreateRSVP(*domain.RSVPCreateRequest) (*domain.RSVP, error)
 	ListRSVPs() ([]domain.RSVP, error)
 	UpdateRSVP(*domain.RSVPUpdateRequest) (*domain.RSVP, error)
-	DeleteRSVP(rsvpID int64) error
+	DeleteRSVPByID(rsvpID int64) error
 	RetrievePrivateRSVP(invitationPrivateID string) (*domain.RSVP, error)
 }

@@ -65,7 +65,7 @@ func (s *service) CreateInvitation(req *domain.InvitationCreateRequest) (*domain
 func (s *service) ListInvitations(rsvps []domain.RSVP) ([]domain.Invitation, error) {
 	invitations, err := s.invitationStorage.ListInvitations()
 	if err != nil {
-		s.baseService.Error("guest service - unable to list all invitations")
+		s.baseService.Error("invitation service - unable to list all invitations")
 		return nil, serviceErrors.NewGeneralServiceError()
 	}
 

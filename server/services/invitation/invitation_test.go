@@ -384,25 +384,25 @@ var _ = Describe("Invitation", func() {
 			Expect(duplicateInvitation).To(BeNil())
 		})
 
-		// 	// Temporarily relaxed requirements for mobile phone number
-		// 	// It("should not allow invitations with duplicate mobile phone numbers", func() {
-		// 	// 	// Change all necessary fields except for mobile phone number
-		// 	// 	req = &domain.InvitationCreateRequest{
-		// 	// 		BaseInvitation: domain.BaseInvitation{
-		// 	// 			CategoryID:        testCategory.ID,
-		// 	// 			Greeting:          "ah ma and ah gong 2",
-		// 	// 			MaximumGuestCount: 2,
-		// 	// 			Notes:             "some notes",
-		// 	// 			MobilePhoneNumber: newInvitation.MobilePhoneNumber,
-		// 	// 		},
-		// 	// 	}
+		// Temporarily relaxed requirements for mobile phone number
+		// It("should not allow invitations with duplicate mobile phone numbers", func() {
+		// 	// Change all necessary fields except for mobile phone number
+		// 	req = &domain.InvitationCreateRequest{
+		// 		BaseInvitation: domain.BaseInvitation{
+		// 			CategoryID:        testCategory.ID,
+		// 			Greeting:          "ah ma and ah gong 2",
+		// 			MaximumGuestCount: 2,
+		// 			Notes:             "some notes",
+		// 			MobilePhoneNumber: newInvitation.MobilePhoneNumber,
+		// 		},
+		// 	}
 
-		// 	// 	duplicateInvitation, err := testGuestService.CreateInvitation(req)
-		// 	// 	Expect(err).To(HaveOccurred())
-		// 	// 	Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
-		// 	// 	Expect(err.Error()).To(Equal("mobile phone number already exists"))
-		// 	// 	Expect(duplicateInvitation).To(BeNil())
-		// 	// })
+		// 	duplicateInvitation, err := testGuestService.CreateInvitation(req)
+		// 	Expect(err).To(HaveOccurred())
+		// 	Expect(err).To(BeAssignableToTypeOf(serviceErrors.ValidationError{}))
+		// 	Expect(err.Error()).To(Equal("mobile phone number already exists"))
+		// 	Expect(duplicateInvitation).To(BeNil())
+		// })
 
 		It("should return an error if greeting is too short", func() {
 			// Validation should catch it before any attempt to storage is made

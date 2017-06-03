@@ -130,7 +130,7 @@ func deleteInvitation(c *gin.Context) {
 		return
 	}
 
-	err = invitationService.DeleteInvitation(invitationID)
+	err = invitationService.DeleteInvitationByID(invitationID)
 	if err != nil {
 		switch err.(type) {
 		case invitation.InvitationNotFoundError:
