@@ -3,20 +3,32 @@ package jwt_test
 import (
 	"time"
 
+	"github.com/rawfish-dev/rsvp-starter/server/config"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	. "github.com/rawfish-dev/rsvp-starter/server/services/jwt"
-	"github.com/rawfish-dev/rsvp-starter/server/testhelpers"
 
+	"github.com/Sirupsen/logrus"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"golang.org/x/net/context"
 )
 
 var _ = Describe("Jwt", func() {
 
-	var testJWTService JWTServiceProvider
-	var token string
+	var testJWTService interfaces.JWTServiceProvider
+	var jwtConfig config.JWTConfig
 
 	BeforeEach(func() {
-		testJWTService = testhelpers.NewTestJWTService()
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
+
+		jwtConfig = config.JWTConfig{
+			HMACSecret:  "some-secret-hmac",
+			TokenIssuer: "rsvp-starter-test",
+		}
+
+		testJWTService = NewService(ctx, jwtConfig)
 	})
 
 	Context("creation", func() {
@@ -43,6 +55,8 @@ var _ = Describe("Jwt", func() {
 	})
 
 	Context("parsing", func() {
+
+		var token string
 
 		BeforeEach(func() {
 			additionalClaims := map[string]string{
@@ -96,13 +110,16 @@ var _ = Describe("Jwt", func() {
 			claims, err := testJWTService.ParseToken(token)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims["userID"].(string)).To(Equal("123123"))
-			Expect(claims["iss"].(string)).To(Equal("rsvp_starter_test"))
+			Expect(claims["iss"].(string)).To(Equal("rsvp-starter-test"))
 			Expect(claims["exp"]).ToNot(BeNil())
 			Expect(claims["iat"]).ToNot(BeNil())
 		})
 	})
 
 	Context("validation", func() {
+
+		var token string
+
 		BeforeEach(func() {
 			additionalClaims := map[string]string{
 				"userID": "123123",
