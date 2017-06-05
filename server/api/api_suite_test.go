@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	. "github.com/rawfish-dev/rsvp-starter/server/api"
-	"github.com/rawfish-dev/rsvp-starter/server/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,12 +20,6 @@ func TestApi(t *testing.T) {
 }
 
 var testAPI *API
-
-var _ = BeforeSuite(func() {
-	testConfig := config.LoadConfig()
-	testAPI = NewAPI(testConfig)
-	testAPI.InitRoutes()
-})
 
 func HitEndpoint(method, url string, reqBody io.Reader, expectedStatus int) (responseBody []byte) {
 	request, err := http.NewRequest(method, url, reqBody)

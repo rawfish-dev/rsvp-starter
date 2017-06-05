@@ -16,12 +16,7 @@ const (
 // SessionMiddleware rejects requests without the correct auth header value and packs it into the context if present
 func SessionMiddleware(sessionService interfaces.SessionServiceProvider) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Check if the auth header is present
 		authToken := c.Request.Header.Get(authHeaderKey)
-		if authToken == "" {
-			c.AbortWithStatus(http.StatusForbidden)
-			return
-		}
 
 		exists, err := sessionService.IsSessionValid(authToken)
 		if err != nil {

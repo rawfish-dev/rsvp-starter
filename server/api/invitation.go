@@ -15,133 +15,158 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/net/context"
 )
 
-func createInvitation(c *gin.Context) {
-	loadedConfig := config.LoadConfig()
+func createInvitation(api *API) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-	baseService := base.NewService(logrus.New())
-	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	invitationService := invitation.NewService(baseService, postgresService)
+		loadedConfig := config.LoadConfig()
 
-	var invitationCreateRequest domain.InvitationCreateRequest
-	err := c.BindJSON(&invitationCreateRequest)
-	if err != nil {
-		baseService.Errorf("invitation api - unable to create new invitation while unwrapping request due to %v", err)
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
+		baseService := base.NewService(logrus.New())
+		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
+		invitationService := invitation.NewService(baseService, postgresService)
 
-	newInvitation, err := invitationService.CreateInvitation(&invitationCreateRequest)
-	if err != nil {
-		switch err.(type) {
-		case serviceErrors.ValidationError:
-			baseService.Errorf("invitation api - unable to create new invitation due to validation error %v", err)
-			c.JSON(domain.NewCustomBadRequestError(err.Error()))
+		var invitationCreateRequest domain.InvitationCreateRequest
+		err := c.BindJSON(&invitationCreateRequest)
+		if err != nil {
+			baseService.Errorf("invitation api - unable to create new invitation while unwrapping request due to %v", err)
+			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
-		baseService.Errorf("invitation api - unable to create new invitation due to %v", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
+		newInvitation, err := invitationService.CreateInvitation(&invitationCreateRequest)
+		if err != nil {
+			switch err.(type) {
+			case serviceErrors.ValidationError:
+				baseService.Errorf("invitation api - unable to create new invitation due to validation error %v", err)
+				c.JSON(domain.NewCustomBadRequestError(err.Error()))
+				return
+			}
 
-	c.JSON(http.StatusOK, newInvitation)
-	return
-}
-
-func listInvitations(c *gin.Context) {
-	loadedConfig := config.LoadConfig()
-
-	baseService := base.NewService(logrus.New())
-	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	rsvpService := rsvp.NewService(baseService, postgresService)
-	invitationService := invitation.NewService(baseService, postgresService)
-
-	allRSVPs, err := rsvpService.ListRSVPs()
-	if err != nil {
-		baseService.Errorf("invitation api - unable to retrieve all rsvps due to %v", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	allInvitations, err := invitationService.ListInvitations(allRSVPs)
-	if err != nil {
-		baseService.Errorf("invitation api - unable to list all invitations due to %v", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
-	c.JSON(http.StatusOK, allInvitations)
-	return
-}
-
-func updateInvitation(c *gin.Context) {
-	loadedConfig := config.LoadConfig()
-
-	baseService := base.NewService(logrus.New())
-	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	invitationService := invitation.NewService(baseService, postgresService)
-
-	var invitationUpdateRequest domain.InvitationUpdateRequest
-	err := c.BindJSON(&invitationUpdateRequest)
-	if err != nil {
-		baseService.Errorf("invitation api - unable to update invitation while unwrapping request due to %v", err)
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	if c.Param("id") != fmt.Sprintf("%v", invitationUpdateRequest.ID) {
-		baseService.Warnf("invitation api - unable to update invitation as params id %v don't match request id %v", c.Param("id"), invitationUpdateRequest.ID)
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	updatedInvitation, err := invitationService.UpdateInvitation(&invitationUpdateRequest)
-	if err != nil {
-		switch err.(type) {
-		case serviceErrors.ValidationError:
-			baseService.Errorf("invitation api - unable to update invitation due to validation error %v", err)
-			c.JSON(domain.NewCustomBadRequestError(err.Error()))
+			baseService.Errorf("invitation api - unable to create new invitation due to %v", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
-		baseService.Errorf("invitation api - unable to update invitation due to %v", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.JSON(http.StatusOK, newInvitation)
 		return
 	}
-
-	c.JSON(http.StatusOK, updatedInvitation)
-	return
 }
 
-func deleteInvitation(c *gin.Context) {
-	loadedConfig := config.LoadConfig()
+func listInvitations(api *API) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-	baseService := base.NewService(logrus.New())
-	postgresService := postgres.NewService(baseService, loadedConfig.Postgres)
-	invitationService := invitation.NewService(baseService, postgresService)
+		loadedConfig := config.LoadConfig()
 
-	invitationIDStr := c.Param("id")
-	invitationID, err := strconv.ParseInt(invitationIDStr, 10, 64)
-	if err != nil {
-		baseService.Warnf("invitation api - unable to delete invitation as params id %v could not be converted due to %v", c.Param("id"), err)
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
+		baseService := base.NewService(logrus.New())
+		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
+		rsvpService := rsvp.NewService(baseService, postgresService)
+		invitationService := invitation.NewService(baseService, postgresService)
 
-	err = invitationService.DeleteInvitationByID(invitationID)
-	if err != nil {
-		switch err.(type) {
-		case invitation.InvitationNotFoundError:
-			c.AbortWithStatus(http.StatusNotFound)
+		allRSVPs, err := rsvpService.ListRSVPs()
+		if err != nil {
+			baseService.Errorf("invitation api - unable to retrieve all rsvps due to %v", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
-		baseService.Errorf("invitation api - unable to delete invitation due to %v", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		allInvitations, err := invitationService.ListInvitations(allRSVPs)
+		if err != nil {
+			baseService.Errorf("invitation api - unable to list all invitations due to %v", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		c.JSON(http.StatusOK, allInvitations)
 		return
 	}
+}
 
-	return
+func updateInvitation(api *API) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
+
+		loadedConfig := config.LoadConfig()
+
+		baseService := base.NewService(logrus.New())
+		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
+		invitationService := invitation.NewService(baseService, postgresService)
+
+		var invitationUpdateRequest domain.InvitationUpdateRequest
+		err := c.BindJSON(&invitationUpdateRequest)
+		if err != nil {
+			baseService.Errorf("invitation api - unable to update invitation while unwrapping request due to %v", err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		if c.Param("id") != fmt.Sprintf("%v", invitationUpdateRequest.ID) {
+			baseService.Warnf("invitation api - unable to update invitation as params id %v don't match request id %v", c.Param("id"), invitationUpdateRequest.ID)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		updatedInvitation, err := invitationService.UpdateInvitation(&invitationUpdateRequest)
+		if err != nil {
+			switch err.(type) {
+			case serviceErrors.ValidationError:
+				baseService.Errorf("invitation api - unable to update invitation due to validation error %v", err)
+				c.JSON(domain.NewCustomBadRequestError(err.Error()))
+				return
+			}
+
+			baseService.Errorf("invitation api - unable to update invitation due to %v", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		c.JSON(http.StatusOK, updatedInvitation)
+		return
+	}
+}
+
+func deleteInvitation(api *API) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
+
+		loadedConfig := config.LoadConfig()
+
+		baseService := base.NewService(logrus.New())
+		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
+		invitationService := invitation.NewService(baseService, postgresService)
+
+		invitationIDStr := c.Param("id")
+		invitationID, err := strconv.ParseInt(invitationIDStr, 10, 64)
+		if err != nil {
+			baseService.Warnf("invitation api - unable to delete invitation as params id %v could not be converted due to %v", c.Param("id"), err)
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		err = invitationService.DeleteInvitationByID(invitationID)
+		if err != nil {
+			switch err.(type) {
+			case invitation.InvitationNotFoundError:
+				c.AbortWithStatus(http.StatusNotFound)
+				return
+			}
+
+			baseService.Errorf("invitation api - unable to delete invitation due to %v", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		return
+	}
 }

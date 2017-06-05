@@ -7,6 +7,7 @@ import (
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
 	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
+	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 	"github.com/rawfish-dev/rsvp-starter/server/services/session"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,9 @@ type API struct {
 	CategoryServiceFactory   func(context.Context) interfaces.CategoryServiceProvider
 	InvitationServiceFactory func(context.Context) interfaces.InvitationServiceProvider
 	RSVPServiceFactory       func(context.Context) interfaces.RSVPServiceProvider
+	CategoryStorageFactory   func(context.Context) interfaces.CategoryStorage
+	InvitationStorageFactory func(context.Context) interfaces.InvitationStorage
+	RSVPStorageFactory       func(context.Context) interfaces.RSVPStorage
 }
 
 var singletonAPI *API
@@ -42,13 +46,17 @@ func NewAPI(config config.Config) *API {
 		sessionServiceFactory := func(ctx context.Context) interfaces.SessionServiceProvider {
 			return session.NewService(ctx, config.Session, jwtServiceFactory(ctx), cacheServiceFactory(ctx))
 		}
+		categoryStorageFactory := func(ctx context.Context) interfaces.CategoryStorage {
+			return postgres.NewService(ctx, config.Postgres)
+		}
 
 		singletonAPI = &API{
-			Router:                gin.New(),
-			HTTPPort:              config.HTTPPort,
-			JWTServiceFactory:     jwtServiceFactory,
-			CacheServiceFactory:   cacheServiceFactory,
-			SessionServiceFactory: sessionServiceFactory,
+			Router:                 gin.New(),
+			HTTPPort:               config.HTTPPort,
+			JWTServiceFactory:      jwtServiceFactory,
+			CacheServiceFactory:    cacheServiceFactory,
+			SessionServiceFactory:  sessionServiceFactory,
+			CategoryStorageFactory: categoryStorageFactory,
 		}
 	})
 

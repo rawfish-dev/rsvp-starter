@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 
 	"github.com/satori/go.uuid"
 )
@@ -37,6 +38,8 @@ var (
 )
 
 func (s *service) InsertInvitation(req *domain.InvitationCreateRequest) (*domain.Invitation, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	invitation := &invitation{
 		CategoryID:        req.CategoryID,
 		PrivateID:         uuid.NewV4().String(),
@@ -50,15 +53,15 @@ func (s *service) InsertInvitation(req *domain.InvitationCreateRequest) (*domain
 	err := s.gorpDB.Insert(invitation)
 	if err != nil {
 		if isInvitationGreetingUniqueConstraintError(err) {
-			s.baseService.Warnf("postgres service - unable to insert invitation with a duplicate greeting %v", invitation.Greeting)
+			ctxLogger.Warnf("postgres service - unable to insert invitation with a duplicate greeting %v", invitation.Greeting)
 			return nil, NewPostgresInvitationGreetingUniqueConstraintError()
 		}
 		if isInvitationMobilePhoneNumberUniqueConstraintError(err) {
-			s.baseService.Warnf("postgres service - unable to insert invitation with a duplicate mobile phone number %v", invitation.MobilePhoneNumber)
+			ctxLogger.Warnf("postgres service - unable to insert invitation with a duplicate mobile phone number %v", invitation.MobilePhoneNumber)
 			return nil, NewPostgresInvitationMobilePhoneNumberUniqueConstraintError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to insert invitation due to %v", err)
+		ctxLogger.Errorf("postgres service - unable to insert invitation due to %v", err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -80,6 +83,8 @@ func (s *service) InsertInvitation(req *domain.InvitationCreateRequest) (*domain
 }
 
 func (s *service) FindInvitationByID(invitationID int64) (*domain.Invitation, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM invitations
@@ -91,11 +96,11 @@ func (s *service) FindInvitationByID(invitationID int64) (*domain.Invitation, er
 	err := s.gorpDB.SelectOne(&invitation, query, invitationID)
 	if err != nil {
 		if isNotFoundError(err) {
-			s.baseService.Warnf("postgres service - unable to find invitation with id %v", invitationID)
+			ctxLogger.Warnf("postgres service - unable to find invitation with id %v", invitationID)
 			return nil, NewPostgresRecordNotFoundError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to find invitation with id %v due to %v", invitationID, err)
+		ctxLogger.Errorf("postgres service - unable to find invitation with id %v due to %v", invitationID, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -117,6 +122,8 @@ func (s *service) FindInvitationByID(invitationID int64) (*domain.Invitation, er
 }
 
 func (s *service) FindInvitationByPrivateID(privateID string) (*domain.Invitation, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM invitations
@@ -128,11 +135,11 @@ func (s *service) FindInvitationByPrivateID(privateID string) (*domain.Invitatio
 	err := s.gorpDB.SelectOne(&invitation, query, privateID)
 	if err != nil {
 		if isNotFoundError(err) {
-			s.baseService.Warnf("postgres service - unable to find invitation with private id %v", privateID)
+			ctxLogger.Warnf("postgres service - unable to find invitation with private id %v", privateID)
 			return nil, NewPostgresRecordNotFoundError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to find invitation with private id %v due to %v", privateID, err)
+		ctxLogger.Errorf("postgres service - unable to find invitation with private id %v due to %v", privateID, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -154,6 +161,8 @@ func (s *service) FindInvitationByPrivateID(privateID string) (*domain.Invitatio
 }
 
 func (s *service) ListInvitations() ([]domain.Invitation, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM invitations
@@ -164,7 +173,7 @@ func (s *service) ListInvitations() ([]domain.Invitation, error) {
 
 	_, err := s.gorpDB.Select(&invitations, query)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to retrieve all invitations due to %v", err)
+		ctxLogger.Errorf("postgres service - unable to retrieve all invitations due to %v", err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -189,6 +198,8 @@ func (s *service) ListInvitations() ([]domain.Invitation, error) {
 }
 
 func (s *service) UpdateInvitation(domainInvitation *domain.Invitation) (*domain.Invitation, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	invitation := &invitation{
 		baseModel: baseModel{
 			ID: domainInvitation.ID,
@@ -204,7 +215,7 @@ func (s *service) UpdateInvitation(domainInvitation *domain.Invitation) (*domain
 
 	_, err := s.gorpDB.Update(invitation)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to update invitation %+v due to %v", invitation, err)
+		ctxLogger.Errorf("postgres service - unable to update invitation %+v due to %v", invitation, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -214,9 +225,11 @@ func (s *service) UpdateInvitation(domainInvitation *domain.Invitation) (*domain
 }
 
 func (s *service) DeleteInvitation(invitation *domain.Invitation) error {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	_, err := s.gorpDB.Delete(invitation)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to delete invitation with id %v due to %v", invitation.ID, err)
+		ctxLogger.Errorf("postgres service - unable to delete invitation with id %v due to %v", invitation.ID, err)
 		return NewPostgresOperationError()
 	}
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 )
 
 type category struct {
@@ -27,6 +28,8 @@ var (
 )
 
 func (s *service) InsertCategory(req *domain.CategoryCreateRequest) (*domain.Category, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	category := &category{
 		Tag: req.Tag,
 	}
@@ -34,11 +37,11 @@ func (s *service) InsertCategory(req *domain.CategoryCreateRequest) (*domain.Cat
 	err := s.gorpDB.Insert(category)
 	if err != nil {
 		if isCategoryTagUniqueConstraintError(err) {
-			s.baseService.Warn("postgres service - unable to insert category with a duplicate tag")
+			ctxLogger.Warn("postgres service - unable to insert category with a duplicate tag")
 			return nil, NewPostgresCategoryTagUniqueConstraintError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to insert category due to %v", err)
+		ctxLogger.Errorf("postgres service - unable to insert category due to %v", err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -51,6 +54,8 @@ func (s *service) InsertCategory(req *domain.CategoryCreateRequest) (*domain.Cat
 }
 
 func (s *service) FindCategoryByID(categoryID int64) (*domain.Category, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v, COUNT(invitations.id) as total
 		FROM categories
@@ -65,11 +70,11 @@ func (s *service) FindCategoryByID(categoryID int64) (*domain.Category, error) {
 	err := s.gorpDB.SelectOne(&category, query, categoryID)
 	if err != nil {
 		if isNotFoundError(err) {
-			s.baseService.Warnf("postgres service - unable to find category with id %v", categoryID)
+			ctxLogger.Warnf("postgres service - unable to find category with id %v", categoryID)
 			return nil, NewPostgresRecordNotFoundError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to find category with id %v due to %v", categoryID, err)
+		ctxLogger.Errorf("postgres service - unable to find category with id %v due to %v", categoryID, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -83,6 +88,8 @@ func (s *service) FindCategoryByID(categoryID int64) (*domain.Category, error) {
 }
 
 func (s *service) ListCategories() ([]domain.Category, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v, COUNT(invitations.id) as total
 		FROM categories
@@ -96,7 +103,7 @@ func (s *service) ListCategories() ([]domain.Category, error) {
 
 	_, err := s.gorpDB.Select(&categories, query)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to retrieve categories due to %v", err)
+		ctxLogger.Errorf("postgres service - unable to retrieve categories due to %v", err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -113,6 +120,8 @@ func (s *service) ListCategories() ([]domain.Category, error) {
 }
 
 func (s *service) UpdateCategory(domainCategory *domain.Category) (*domain.Category, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	category := &category{
 		baseModel: baseModel{
 			ID: domainCategory.ID,
@@ -122,7 +131,7 @@ func (s *service) UpdateCategory(domainCategory *domain.Category) (*domain.Categ
 
 	_, err := s.gorpDB.Update(category)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to update category %+v due to %v", category, err)
+		ctxLogger.Errorf("postgres service - unable to update category %+v due to %v", category, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -130,9 +139,11 @@ func (s *service) UpdateCategory(domainCategory *domain.Category) (*domain.Categ
 }
 
 func (s *service) DeleteCategory(domainCategory *domain.Category) error {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	_, err := s.gorpDB.Delete(domainCategory)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to delete category with id %v due to %v", domainCategory.ID, err)
+		ctxLogger.Errorf("postgres service - unable to delete category with id %v due to %v", domainCategory.ID, err)
 		return NewPostgresOperationError()
 	}
 

@@ -30,8 +30,8 @@ func (a *API) InitRoutes() {
 		apiNameSpace.GET("/healthcheck", healthcheck)
 		apiNameSpace.POST("/sessions", createSession(a))
 
-		apiNameSpace.POST("/p_rsvps", guestCreateRSVP)
-		apiNameSpace.GET("/p_rsvps/:id", guestGetRSVP)
+		apiNameSpace.POST("/p_rsvps", guestCreateRSVP(a))
+		apiNameSpace.GET("/p_rsvps/:id", guestGetRSVP(a))
 	}
 
 	ctx := context.Background()
@@ -41,20 +41,20 @@ func (a *API) InitRoutes() {
 	{
 		apiNameSpace.DELETE("/sessions", destroySession(a))
 
-		apiNameSpace.POST("/categories", createCategory)
-		apiNameSpace.GET("/categories", listCategories)
-		apiNameSpace.PUT("/categories/:id", updateCategory)
-		apiNameSpace.DELETE("/categories/:id", deleteCategory)
+		apiNameSpace.POST("/categories", createCategory(a))
+		apiNameSpace.GET("/categories", listCategories(a))
+		apiNameSpace.PUT("/categories/:id", updateCategory(a))
+		apiNameSpace.DELETE("/categories/:id", deleteCategory(a))
 
-		apiNameSpace.POST("/invitations", createInvitation)
-		apiNameSpace.GET("/invitations", listInvitations)
-		apiNameSpace.PUT("/invitations/:id", updateInvitation)
-		apiNameSpace.DELETE("/invitations/:id", deleteInvitation)
+		apiNameSpace.POST("/invitations", createInvitation(a))
+		apiNameSpace.GET("/invitations", listInvitations(a))
+		apiNameSpace.PUT("/invitations/:id", updateInvitation(a))
+		apiNameSpace.DELETE("/invitations/:id", deleteInvitation(a))
 
-		apiNameSpace.POST("/rsvps", createRSVP)
-		apiNameSpace.GET("/rsvps", listRSVPs)
-		apiNameSpace.PUT("/rsvps/:id", updateRSVP)
-		apiNameSpace.DELETE("/rsvps/:id", deleteRSVP)
+		apiNameSpace.POST("/rsvps", createRSVP(a))
+		apiNameSpace.GET("/rsvps", listRSVPs(a))
+		apiNameSpace.PUT("/rsvps/:id", updateRSVP(a))
+		apiNameSpace.DELETE("/rsvps/:id", deleteRSVP(a))
 	}
 }
 

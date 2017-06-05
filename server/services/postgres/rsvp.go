@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 )
 
 type rsvp struct {
@@ -33,6 +34,8 @@ var (
 )
 
 func (s *service) InsertRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	rsvp := &rsvp{
 		InvitationPrivateID: req.InvitationPrivateID,
 		FullName:            req.FullName,
@@ -46,11 +49,11 @@ func (s *service) InsertRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error
 	err := s.gorpDB.Insert(rsvp)
 	if err != nil {
 		if isRSVPPrivateIDUniqueConstraintError(err) {
-			s.baseService.Warnf("postgres service - unable to insert rsvp with a duplicate private id %v", rsvp.InvitationPrivateID)
+			ctxLogger.Warnf("postgres service - unable to insert rsvp with a duplicate private id %v", rsvp.InvitationPrivateID)
 			return nil, NewPostgresRSVPPrivateIDUniqueConstraintError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to insert rsvp due to %v", err)
+		ctxLogger.Errorf("postgres service - unable to insert rsvp due to %v", err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -73,6 +76,8 @@ func (s *service) InsertRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error
 }
 
 func (s *service) FindRSVPByID(rsvpID int64) (*domain.RSVP, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM rsvps
@@ -84,11 +89,11 @@ func (s *service) FindRSVPByID(rsvpID int64) (*domain.RSVP, error) {
 	err := s.gorpDB.SelectOne(&rsvp, query, rsvpID)
 	if err != nil {
 		if isNotFoundError(err) {
-			s.baseService.Warnf("postgres service - unable to find rsvp with id %v", rsvpID)
+			ctxLogger.Warnf("postgres service - unable to find rsvp with id %v", rsvpID)
 			return nil, NewPostgresRecordNotFoundError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to find rsvp with id %v due to %v", rsvpID, err)
+		ctxLogger.Errorf("postgres service - unable to find rsvp with id %v due to %v", rsvpID, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -111,6 +116,8 @@ func (s *service) FindRSVPByID(rsvpID int64) (*domain.RSVP, error) {
 }
 
 func (s *service) FindRSVPByInvitationPrivateID(invitationPrivateID string) (*domain.RSVP, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM rsvps
@@ -122,11 +129,11 @@ func (s *service) FindRSVPByInvitationPrivateID(invitationPrivateID string) (*do
 	err := s.gorpDB.SelectOne(&rsvp, query, invitationPrivateID)
 	if err != nil {
 		if isNotFoundError(err) {
-			s.baseService.Warnf("postgres service - unable to find rsvp with invitation private id %v", invitationPrivateID)
+			ctxLogger.Warnf("postgres service - unable to find rsvp with invitation private id %v", invitationPrivateID)
 			return nil, NewPostgresRecordNotFoundError()
 		}
 
-		s.baseService.Errorf("postgres service - unable to find rsvp with invitation private id %v due to %v", invitationPrivateID, err)
+		ctxLogger.Errorf("postgres service - unable to find rsvp with invitation private id %v due to %v", invitationPrivateID, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -149,6 +156,8 @@ func (s *service) FindRSVPByInvitationPrivateID(invitationPrivateID string) (*do
 }
 
 func (s *service) ListRSVPs() ([]domain.RSVP, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	query := fmt.Sprintf(`
 		SELECT %v
 		FROM rsvps
@@ -159,7 +168,7 @@ func (s *service) ListRSVPs() ([]domain.RSVP, error) {
 
 	_, err := s.gorpDB.Select(&rsvps, query)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to retrieve all rsvps due to %v", err)
+		ctxLogger.Errorf("postgres service - unable to retrieve all rsvps due to %v", err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -185,6 +194,8 @@ func (s *service) ListRSVPs() ([]domain.RSVP, error) {
 }
 
 func (s *service) UpdateRSVP(domainRSVP *domain.RSVP) (*domain.RSVP, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	rsvp := &rsvp{
 		baseModel: baseModel{
 			ID: domainRSVP.ID,
@@ -200,7 +211,7 @@ func (s *service) UpdateRSVP(domainRSVP *domain.RSVP) (*domain.RSVP, error) {
 
 	_, err := s.gorpDB.Update(rsvp)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to update rsvp %+v due to %v", rsvp, err)
+		ctxLogger.Errorf("postgres service - unable to update rsvp %+v due to %v", rsvp, err)
 		return nil, NewPostgresOperationError()
 	}
 
@@ -211,9 +222,11 @@ func (s *service) UpdateRSVP(domainRSVP *domain.RSVP) (*domain.RSVP, error) {
 }
 
 func (s *service) DeleteRSVP(rsvp *domain.RSVP) error {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	_, err := s.gorpDB.Delete(rsvp)
 	if err != nil {
-		s.baseService.Errorf("postgres service - unable to delete rsvp with id %v due to %v", rsvp.ID, err)
+		ctxLogger.Errorf("postgres service - unable to delete rsvp with id %v due to %v", rsvp.ID, err)
 		return NewPostgresOperationError()
 	}
 

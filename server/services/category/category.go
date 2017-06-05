@@ -5,10 +5,11 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 	"github.com/rawfish-dev/rsvp-starter/server/utils"
+
+	"golang.org/x/net/context"
 )
 
 const (
@@ -19,13 +20,13 @@ const (
 var _ interfaces.CategoryServiceProvider = new(service)
 
 type service struct {
-	baseService     *base.Service
+	ctx             context.Context
 	categoryStorage interfaces.CategoryStorage
 }
 
-func NewService(baseService *base.Service, categoryStorage interfaces.CategoryStorage) *service {
+func NewService(ctx context.Context, categoryStorage interfaces.CategoryStorage) *service {
 	return &service{
-		baseService:     baseService,
+		ctx:             ctx,
 		categoryStorage: categoryStorage,
 	}
 }
@@ -51,9 +52,11 @@ func (s *service) CreateCategory(req *domain.CategoryCreateRequest) (*domain.Cat
 }
 
 func (s *service) ListCategories() ([]domain.Category, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	categories, err := s.categoryStorage.ListCategories()
 	if err != nil {
-		s.baseService.Error("category service - unable to list all categories")
+		ctxLogger.Error("category service - unable to list all categories")
 		return nil, serviceErrors.NewGeneralServiceError()
 	}
 

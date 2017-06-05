@@ -89,8 +89,6 @@ func (s *service) UpdateRSVP(req *domain.RSVPUpdateRequest) (*domain.RSVP, error
 	rsvp.Remarks = req.Remarks
 	rsvp.MobilePhoneNumber = req.MobilePhoneNumber
 
-	fmt.Printf("\nRSVP (1): %+v\n\n", rsvp)
-
 	updatedInvitation, err := s.rsvpStorage.UpdateRSVP(rsvp)
 	if err != nil {
 		// TODO:: add specific service error handling

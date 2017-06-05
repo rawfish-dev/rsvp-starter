@@ -11,8 +11,8 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/config"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
+	"golang.org/x/net/context"
 	"gopkg.in/gorp.v1"
 )
 
@@ -21,18 +21,20 @@ var _ interfaces.InvitationStorage = new(service)
 var _ interfaces.RSVPStorage = new(service)
 
 type service struct {
-	baseService *base.Service
-	gorpDB      *gorp.DbMap
+	ctx    context.Context
+	gorpDB *gorp.DbMap
 }
 
 var singletonService *service
 var once sync.Once
 
-func NewService(baseService *base.Service, postgresConfig config.PostgresConfig) *service {
+func NewService(ctx context.Context, postgresConfig config.PostgresConfig) *service {
 	once.Do(func() {
+		ctxLogger := ctx.Value("logger").(interfaces.Logger)
+
 		dbConnection, err := sql.Open("postgres", postgresConfig.URL)
 		if err != nil {
-			baseService.Fatalf("postgres service - unable to open connection to postgres due to %v", err.Error())
+			ctxLogger.Fatalf("postgres service - unable to open connection to postgres due to %v", err.Error())
 		}
 
 		dbConnection.SetMaxIdleConns(postgresConfig.MaxIdle)
@@ -45,7 +47,7 @@ func NewService(baseService *base.Service, postgresConfig config.PostgresConfig)
 
 		gorpDB.TypeConverter = dbTypeConverter{}
 
-		singletonService = &service{baseService, gorpDB}
+		singletonService = &service{ctx, gorpDB}
 	})
 
 	return singletonService
