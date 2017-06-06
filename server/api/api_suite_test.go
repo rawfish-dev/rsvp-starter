@@ -19,9 +19,7 @@ func TestApi(t *testing.T) {
 	RunSpecs(t, "Api Suite")
 }
 
-var testAPI *API
-
-func HitEndpoint(method, url string, reqBody io.Reader, expectedStatus int) (responseBody []byte) {
+func HitEndpoint(testAPI *API, method, url string, reqBody io.Reader, expectedStatus int) (responseBody []byte) {
 	request, err := http.NewRequest(method, url, reqBody)
 	Ω(err).ToNot(HaveOccurred())
 

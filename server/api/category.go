@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/rawfish-dev/rsvp-starter/server/config"
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/services/category"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
-	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
@@ -57,10 +55,7 @@ func listCategories(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		categoryService := category.NewService(ctx, postgresService)
+		categoryService := api.CategoryServiceFactory(ctx)
 
 		allCategories, err := categoryService.ListCategories()
 		if err != nil {
@@ -80,10 +75,7 @@ func updateCategory(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		categoryService := category.NewService(ctx, postgresService)
+		categoryService := api.CategoryServiceFactory(ctx)
 
 		var categoryUpdateRequest domain.CategoryUpdateRequest
 		err := c.BindJSON(&categoryUpdateRequest)
@@ -124,10 +116,7 @@ func deleteCategory(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		categoryService := category.NewService(ctx, postgresService)
+		categoryService := api.CategoryServiceFactory(ctx)
 
 		categoryIDStr := c.Param("id")
 		categoryID, err := strconv.ParseInt(categoryIDStr, 10, 64)

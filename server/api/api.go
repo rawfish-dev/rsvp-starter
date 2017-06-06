@@ -1,8 +1,6 @@
 package api
 
 import (
-	"sync"
-
 	"github.com/rawfish-dev/rsvp-starter/server/config"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
@@ -31,34 +29,27 @@ type API struct {
 	RSVPStorageFactory       func(context.Context) interfaces.RSVPStorage
 }
 
-var singletonAPI *API
-var once sync.Once
-
 func NewAPI(config config.Config) *API {
-	once.Do(func() {
-		// Setup factories
-		jwtServiceFactory := func(ctx context.Context) interfaces.JWTServiceProvider {
-			return jwt.NewService(ctx, config.JWT)
-		}
-		cacheServiceFactory := func(ctx context.Context) interfaces.CacheServiceProvider {
-			return cache.NewService(ctx)
-		}
-		sessionServiceFactory := func(ctx context.Context) interfaces.SessionServiceProvider {
-			return session.NewService(ctx, config.Session, jwtServiceFactory(ctx), cacheServiceFactory(ctx))
-		}
-		categoryStorageFactory := func(ctx context.Context) interfaces.CategoryStorage {
-			return postgres.NewService(ctx, config.Postgres)
-		}
+	// Setup factories
+	jwtServiceFactory := func(ctx context.Context) interfaces.JWTServiceProvider {
+		return jwt.NewService(ctx, config.JWT)
+	}
+	cacheServiceFactory := func(ctx context.Context) interfaces.CacheServiceProvider {
+		return cache.NewService(ctx)
+	}
+	sessionServiceFactory := func(ctx context.Context) interfaces.SessionServiceProvider {
+		return session.NewService(ctx, config.Session, jwtServiceFactory(ctx), cacheServiceFactory(ctx))
+	}
+	categoryStorageFactory := func(ctx context.Context) interfaces.CategoryStorage {
+		return postgres.NewService(ctx, config.Postgres)
+	}
 
-		singletonAPI = &API{
-			Router:                 gin.New(),
-			HTTPPort:               config.HTTPPort,
-			JWTServiceFactory:      jwtServiceFactory,
-			CacheServiceFactory:    cacheServiceFactory,
-			SessionServiceFactory:  sessionServiceFactory,
-			CategoryStorageFactory: categoryStorageFactory,
-		}
-	})
-
-	return singletonAPI
+	return &API{
+		Router:                 gin.New(),
+		HTTPPort:               config.HTTPPort,
+		JWTServiceFactory:      jwtServiceFactory,
+		CacheServiceFactory:    cacheServiceFactory,
+		SessionServiceFactory:  sessionServiceFactory,
+		CategoryStorageFactory: categoryStorageFactory,
+	}
 }
