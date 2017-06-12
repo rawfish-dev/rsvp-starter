@@ -7,7 +7,6 @@ import (
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/mock"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	. "github.com/rawfish-dev/rsvp-starter/server/services/category"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
@@ -16,6 +15,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"golang.org/x/net/context"
 )
 
 var _ = Describe("Category", func() {
@@ -27,9 +27,12 @@ var _ = Describe("Category", func() {
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
 
-		testBaseService := base.NewService(logrus.New())
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
+
 		mockCategoryStorage = mock_interfaces.NewMockCategoryStorage(ctrl)
-		testCategoryService = NewService(testBaseService, mockCategoryStorage)
+		testCategoryService = NewService(ctx, mockCategoryStorage)
 	})
 
 	AfterEach(func() {
