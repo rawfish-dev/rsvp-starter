@@ -12,7 +12,6 @@ import (
 	"github.com/rawfish-dev/rsvp-starter/server/services/invitation"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 	"github.com/rawfish-dev/rsvp-starter/server/services/rsvp"
-	"github.com/rawfish-dev/rsvp-starter/server/services/security"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
@@ -27,22 +26,18 @@ func guestCreateRSVP(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		baseService := base.NewService(logrus.New())
-		securityService := security.NewService(baseService)
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		rsvpService := rsvp.NewService(baseService, postgresService)
+		securityService := api.SecurityServiceFactory(ctx)
+		rsvpService := api.RSVPServiceFactory(ctx)
 
 		var rsvpCreateRequest domain.RSVPCreateRequest
 		err := c.BindJSON(&rsvpCreateRequest)
 		if err != nil {
-			baseService.Errorf("rsvp api - unable to create new guest rsvp while unwrapping request due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to create new guest rsvp while unwrapping request due to %v", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
-		baseService.Infof("rsvp api - receiving create guest rsvp %+v", rsvpCreateRequest)
+		ctxlogger.Infof("rsvp api - receiving create guest rsvp %+v", rsvpCreateRequest)
 
 		///////////////////
 		// Private RSVPs //
@@ -58,7 +53,7 @@ func guestCreateRSVP(api *API) func(c *gin.Context) {
 					// Do nothing, means guest has not RSVP-ed yet
 				default:
 					// All other errors should be considered failures
-					baseService.Errorf("rsvp api - unable to retrieve private rsvp due to %v", err)
+					ctxlogger.Errorf("rsvp api - unable to retrieve private rsvp due to %v", err)
 					c.AbortWithStatus(http.StatusInternalServerError)
 					return
 				}
@@ -68,12 +63,12 @@ func guestCreateRSVP(api *API) func(c *gin.Context) {
 				if err != nil {
 					switch err.(type) {
 					case serviceErrors.ValidationError:
-						baseService.Errorf("rsvp api - unable to create new rsvp due to validation error %v", err)
+						ctxlogger.Errorf("rsvp api - unable to create new rsvp due to validation error %v", err)
 						c.JSON(domain.NewCustomBadRequestError(err.Error()))
 						return
 					}
 
-					baseService.Errorf("rsvp api - unable to create new rsvp due to %v", err)
+					ctxlogger.Errorf("rsvp api - unable to create new rsvp due to %v", err)
 					c.AbortWithStatus(http.StatusInternalServerError)
 					return
 				}
@@ -104,12 +99,12 @@ func guestCreateRSVP(api *API) func(c *gin.Context) {
 		if err != nil {
 			switch err.(type) {
 			case serviceErrors.ValidationError:
-				baseService.Errorf("rsvp api - unable to create new rsvp due to validation error %v", err)
+				ctxlogger.Errorf("rsvp api - unable to create new rsvp due to validation error %v", err)
 				c.JSON(domain.NewCustomBadRequestError(err.Error()))
 				return
 			}
 
-			baseService.Errorf("rsvp api - unable to create new rsvp due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to create new rsvp due to %v", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -199,16 +194,12 @@ func createRSVP(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		baseService := base.NewService(logrus.New())
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		rsvpService := rsvp.NewService(baseService, postgresService)
+		rsvpService := api.RSVPServiceFactory(ctx)
 
 		var rsvpCreateRequest domain.RSVPCreateRequest
 		err := c.BindJSON(&rsvpCreateRequest)
 		if err != nil {
-			baseService.Errorf("rsvp api - unable to create new rsvp while unwrapping request due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to create new rsvp while unwrapping request due to %v", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -217,12 +208,12 @@ func createRSVP(api *API) func(c *gin.Context) {
 		if err != nil {
 			switch err.(type) {
 			case serviceErrors.ValidationError:
-				baseService.Errorf("rsvp api - unable to create new rsvp due to validation error %v", err)
+				ctxlogger.Errorf("rsvp api - unable to create new rsvp due to validation error %v", err)
 				c.JSON(domain.NewCustomBadRequestError(err.Error()))
 				return
 			}
 
-			baseService.Errorf("rsvp api - unable to create new rsvp due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to create new rsvp due to %v", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -238,15 +229,11 @@ func listRSVPs(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		baseService := base.NewService(logrus.New())
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		rsvpService := rsvp.NewService(baseService, postgresService)
+		rsvpService := api.RSVPServiceFactory(ctx)
 
 		allRSVPs, err := rsvpService.ListRSVPs()
 		if err != nil {
-			baseService.Errorf("rsvp api - unable to list all rsvps due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to list all rsvps due to %v", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -262,22 +249,18 @@ func updateRSVP(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		baseService := base.NewService(logrus.New())
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		rsvpService := rsvp.NewService(baseService, postgresService)
+		rsvpService := api.RSVPServiceFactory(ctx)
 
 		var rsvpUpdateRequest domain.RSVPUpdateRequest
 		err := c.BindJSON(&rsvpUpdateRequest)
 		if err != nil {
-			baseService.Errorf("rsvp api - unable to update rsvp while unwrapping request due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to update rsvp while unwrapping request due to %v", err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
 		if c.Param("id") != fmt.Sprintf("%v", rsvpUpdateRequest.ID) {
-			baseService.Warnf("rsvp api - unable to update rsvp as params id %v don't match request id %v", c.Param("id"), rsvpUpdateRequest.ID)
+			ctxlogger.Warnf("rsvp api - unable to update rsvp as params id %v don't match request id %v", c.Param("id"), rsvpUpdateRequest.ID)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -286,12 +269,12 @@ func updateRSVP(api *API) func(c *gin.Context) {
 		if err != nil {
 			switch err.(type) {
 			case serviceErrors.ValidationError:
-				baseService.Errorf("rsvp api - unable to update rsvp due to validation error %v", err)
+				ctxlogger.Errorf("rsvp api - unable to update rsvp due to validation error %v", err)
 				c.JSON(domain.NewCustomBadRequestError(err.Error()))
 				return
 			}
 
-			baseService.Errorf("rsvp api - unable to update rsvp due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to update rsvp due to %v", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
@@ -307,16 +290,12 @@ func deleteRSVP(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		loadedConfig := config.LoadConfig()
-
-		baseService := base.NewService(logrus.New())
-		postgresService := postgres.NewService(ctx, loadedConfig.Postgres)
-		rsvpService := rsvp.NewService(baseService, postgresService)
+		rsvpService := api.RSVPServiceFactory(ctx)
 
 		rsvpIDStr := c.Param("id")
 		rsvpID, err := strconv.ParseInt(rsvpIDStr, 10, 64)
 		if err != nil {
-			baseService.Warnf("rsvp api - unable to delete rsvp as params id %v could not be converted due to %v", c.Param("id"), err)
+			ctxlogger.Warnf("rsvp api - unable to delete rsvp as params id %v could not be converted due to %v", c.Param("id"), err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
@@ -329,7 +308,7 @@ func deleteRSVP(api *API) func(c *gin.Context) {
 				return
 			}
 
-			baseService.Errorf("rsvp api - unable to delete rsvp due to %v", err)
+			ctxlogger.Errorf("rsvp api - unable to delete rsvp due to %v", err)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}

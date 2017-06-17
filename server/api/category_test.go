@@ -77,8 +77,7 @@ var _ = Describe("Category", func() {
 			err = json.Unmarshal(responseBytes, &newCategory)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(newCategory.ID).To(Equal(int64(1)))
-			Expect(newCategory.Tag).To(Equal("some-tag"))
+			Expect(newCategory).To(Equal(category))
 		})
 
 		It("should return 400 Bad Request when a validation error occurs", func() {

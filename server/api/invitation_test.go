@@ -87,11 +87,7 @@ var _ = Describe("Invitation", func() {
 			err = json.Unmarshal(responseBytes, &newInvitation)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(newInvitation.BaseInvitation).To(Equal(createInvitationReq.BaseInvitation))
-			Expect(newInvitation.ID).To(Equal(int64(1)))
-			Expect(newInvitation.PrivateID).To(Equal("some-private-id"))
-			Expect(newInvitation.Status).To(Equal(domain.NotSent))
-			Expect(newInvitation.UpdatedAt).To(Equal("2017-12-13"))
+			Expect(newInvitation).To(Equal(invitation))
 		})
 
 		It("should return 400 Bad Request when a validation error occurs", func() {
