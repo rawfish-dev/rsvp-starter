@@ -5,8 +5,6 @@ import (
 	"strings"
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
-	"github.com/rawfish-dev/rsvp-starter/server/services/security"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
@@ -19,8 +17,7 @@ func createSession(api *API) func(c *gin.Context) {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, "logger", ctxlogger)
 
-		baseService := base.NewService(ctxlogger)
-		securityService := security.NewService(baseService)
+		securityService := api.SecurityServiceFactory(ctx)
 		sessionService := api.SessionServiceFactory(ctx)
 
 		var sessionCreateRequest domain.SessionCreateRequest

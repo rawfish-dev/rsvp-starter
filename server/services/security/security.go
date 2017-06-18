@@ -4,15 +4,15 @@ import (
 	"strings"
 
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/net/context"
 )
 
 var _ interfaces.SecurityServiceProvider
 
 type service struct {
-	baseService *base.Service
+	ctx context.Context
 }
 
 var (
@@ -23,22 +23,24 @@ var (
 	}
 )
 
-func NewService(baseService *base.Service) *service {
-	return &service{baseService}
+func NewService(ctx context.Context) *service {
+	return &service{ctx}
 }
 
 func (s *service) ValidateCredentials(username, password string) (valid bool) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	downcasedUsername := strings.ToLower(username)
 
 	encryptedPassword, ok := credentials[downcasedUsername]
 	if !ok {
-		s.baseService.Warnf("security service - unable to find username %v", downcasedUsername)
+		ctxLogger.Warnf("security service - unable to find username %v", downcasedUsername)
 		return false
 	}
 
 	err := bcrypt.CompareHashAndPassword([]byte(encryptedPassword), []byte(password))
 	if err != nil {
-		s.baseService.Warnf("security service - password did not match encrypted password %v", err)
+		ctxLogger.Warnf("security service - password did not match encrypted password %v", err)
 		return false
 	}
 

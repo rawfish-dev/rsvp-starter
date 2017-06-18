@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 )
 
 const (
@@ -18,9 +20,11 @@ type googleReCAPTCHAVerifyResponse struct {
 }
 
 func (s *service) VerifyReCAPTCHA(token string) (valid bool) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	fullURL, err := url.Parse(googleReCAPTCHAVerifyURL)
 	if err != nil {
-		s.baseService.Errorf("security service - unable to parse reCAPTCHA verify url due to %v", err)
+		ctxLogger.Errorf("security service - unable to parse reCAPTCHA verify url due to %v", err)
 		return false
 	}
 	urlQuery := fullURL.Query()
@@ -30,21 +34,21 @@ func (s *service) VerifyReCAPTCHA(token string) (valid bool) {
 
 	verifyReq, err := http.NewRequest("POST", fullURL.String(), nil)
 	if err != nil {
-		s.baseService.Errorf("security service - unable to create reCAPTCHA verify request due to %v", err)
+		ctxLogger.Errorf("security service - unable to create reCAPTCHA verify request due to %v", err)
 		return false
 	}
 
 	client := &http.Client{}
 	resp, err := client.Do(verifyReq)
 	if err != nil {
-		s.baseService.Errorf("security service - unable to complete reCAPTCHA verify due to %v", err)
+		ctxLogger.Errorf("security service - unable to complete reCAPTCHA verify due to %v", err)
 		return false
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		s.baseService.Errorf("security service - unable to read reCAPTCHA response body due to %v", err)
+		ctxLogger.Errorf("security service - unable to read reCAPTCHA response body due to %v", err)
 		return false
 	}
 
@@ -52,12 +56,12 @@ func (s *service) VerifyReCAPTCHA(token string) (valid bool) {
 
 	err = json.Unmarshal(body, &verifyResp)
 	if err != nil {
-		s.baseService.Errorf("security service - unable to unwrap reCAPTCHA response body due to %v", err)
+		ctxLogger.Errorf("security service - unable to unwrap reCAPTCHA response body due to %v", err)
 		return false
 	}
 
 	if len(verifyResp.ErrorCodes) > 0 {
-		s.baseService.Errorf("security service - validation of reCAPTCHA failed due to %v", verifyResp.ErrorCodes)
+		ctxLogger.Errorf("security service - validation of reCAPTCHA failed due to %v", verifyResp.ErrorCodes)
 		return false
 	}
 

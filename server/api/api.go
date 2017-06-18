@@ -4,8 +4,12 @@ import (
 	"github.com/rawfish-dev/rsvp-starter/server/config"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
 	"github.com/rawfish-dev/rsvp-starter/server/services/cache"
+	"github.com/rawfish-dev/rsvp-starter/server/services/category"
+	"github.com/rawfish-dev/rsvp-starter/server/services/invitation"
 	"github.com/rawfish-dev/rsvp-starter/server/services/jwt"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
+	"github.com/rawfish-dev/rsvp-starter/server/services/rsvp"
+	"github.com/rawfish-dev/rsvp-starter/server/services/security"
 	"github.com/rawfish-dev/rsvp-starter/server/services/session"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +34,18 @@ type API struct {
 }
 
 func NewAPI(config config.Config) *API {
-	// Setup factories
+	// Setup storage factories
+	categoryStorageFactory := func(ctx context.Context) interfaces.CategoryStorage {
+		return postgres.NewService(ctx, config.Postgres)
+	}
+	invitationStorageFactory := func(ctx context.Context) interfaces.InvitationStorage {
+		return postgres.NewService(ctx, config.Postgres)
+	}
+	rsvpStorageFactory := func(ctx context.Context) interfaces.RSVPStorage {
+		return postgres.NewService(ctx, config.Postgres)
+	}
+
+	// Setup service factories
 	jwtServiceFactory := func(ctx context.Context) interfaces.JWTServiceProvider {
 		return jwt.NewService(ctx, config.JWT)
 	}
@@ -40,16 +55,31 @@ func NewAPI(config config.Config) *API {
 	sessionServiceFactory := func(ctx context.Context) interfaces.SessionServiceProvider {
 		return session.NewService(ctx, config.Session, jwtServiceFactory(ctx), cacheServiceFactory(ctx))
 	}
-	categoryStorageFactory := func(ctx context.Context) interfaces.CategoryStorage {
-		return postgres.NewService(ctx, config.Postgres)
+	securityServiceFactory := func(ctx context.Context) interfaces.SecurityServiceProvider {
+		return security.NewService(ctx)
+	}
+	categoryServiceFactory := func(ctx context.Context) interfaces.CategoryServiceProvider {
+		return category.NewService(ctx, categoryStorageFactory(ctx))
+	}
+	invitationServiceFactory := func(ctx context.Context) interfaces.InvitationServiceProvider {
+		return invitation.NewService(ctx, invitationStorageFactory(ctx))
+	}
+	rsvpServiceFactory := func(ctx context.Context) interfaces.RSVPServiceProvider {
+		return rsvp.NewService(ctx, rsvpStorageFactory(ctx))
 	}
 
 	return &API{
-		Router:                 gin.New(),
-		HTTPPort:               config.HTTPPort,
-		JWTServiceFactory:      jwtServiceFactory,
-		CacheServiceFactory:    cacheServiceFactory,
-		SessionServiceFactory:  sessionServiceFactory,
-		CategoryStorageFactory: categoryStorageFactory,
+		Router:                   gin.New(),
+		HTTPPort:                 config.HTTPPort,
+		JWTServiceFactory:        jwtServiceFactory,
+		CacheServiceFactory:      cacheServiceFactory,
+		SessionServiceFactory:    sessionServiceFactory,
+		SecurityServiceFactory:   securityServiceFactory,
+		CategoryServiceFactory:   categoryServiceFactory,
+		InvitationServiceFactory: invitationServiceFactory,
+		RSVPServiceFactory:       rsvpServiceFactory,
+		CategoryStorageFactory:   categoryStorageFactory,
+		InvitationStorageFactory: invitationStorageFactory,
+		RSVPStorageFactory:       rsvpStorageFactory,
 	}
 }

@@ -5,10 +5,11 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 	"github.com/rawfish-dev/rsvp-starter/server/utils"
+
+	"golang.org/x/net/context"
 )
 
 const (
@@ -24,15 +25,12 @@ const (
 var _ interfaces.RSVPServiceProvider = new(service)
 
 type service struct {
-	baseService *base.Service
+	ctx         context.Context
 	rsvpStorage interfaces.RSVPStorage
 }
 
-func NewService(baseService *base.Service, rsvpStorage interfaces.RSVPStorage) *service {
-	return &service{
-		baseService: baseService,
-		rsvpStorage: rsvpStorage,
-	}
+func NewService(ctx context.Context, rsvpStorage interfaces.RSVPStorage) *service {
+	return &service{ctx, rsvpStorage}
 }
 
 func (s *service) CreateRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error) {
@@ -57,9 +55,11 @@ func (s *service) CreateRSVP(req *domain.RSVPCreateRequest) (*domain.RSVP, error
 }
 
 func (s *service) ListRSVPs() ([]domain.RSVP, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	rsvps, err := s.rsvpStorage.ListRSVPs()
 	if err != nil {
-		s.baseService.Error("rsvp service - unable to list all rsvps")
+		ctxLogger.Error("rsvp service - unable to list all rsvps")
 		return nil, serviceErrors.NewGeneralServiceError()
 	}
 

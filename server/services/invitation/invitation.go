@@ -5,10 +5,11 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	"github.com/rawfish-dev/rsvp-starter/server/interfaces"
-	"github.com/rawfish-dev/rsvp-starter/server/services/base"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
 	"github.com/rawfish-dev/rsvp-starter/server/services/postgres"
 	"github.com/rawfish-dev/rsvp-starter/server/utils"
+
+	"golang.org/x/net/context"
 )
 
 const (
@@ -25,15 +26,12 @@ const (
 var _ interfaces.InvitationServiceProvider = new(service)
 
 type service struct {
-	baseService       *base.Service
+	ctx               context.Context
 	invitationStorage interfaces.InvitationStorage
 }
 
-func NewService(baseService *base.Service, invitationStorage interfaces.InvitationStorage) *service {
-	return &service{
-		baseService:       baseService,
-		invitationStorage: invitationStorage,
-	}
+func NewService(ctx context.Context, invitationStorage interfaces.InvitationStorage) *service {
+	return &service{ctx, invitationStorage}
 }
 
 func (s *service) CreateInvitation(req *domain.InvitationCreateRequest) (*domain.Invitation, error) {
@@ -63,9 +61,11 @@ func (s *service) CreateInvitation(req *domain.InvitationCreateRequest) (*domain
 }
 
 func (s *service) ListInvitations(rsvps []domain.RSVP) ([]domain.Invitation, error) {
+	ctxLogger := s.ctx.Value("logger").(interfaces.Logger)
+
 	invitations, err := s.invitationStorage.ListInvitations()
 	if err != nil {
-		s.baseService.Error("invitation service - unable to list all invitations")
+		ctxLogger.Error("invitation service - unable to list all invitations")
 		return nil, serviceErrors.NewGeneralServiceError()
 	}
 
