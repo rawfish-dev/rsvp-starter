@@ -90,6 +90,25 @@ var _ = Describe("Invitation", func() {
 			Expect(newInvitation).To(Equal(invitation))
 		})
 
+		It("should return 400 Bad Request when invalid JSON is passed", func() {
+			testAPI.InvitationServiceFactory = func(ctx context.Context) interfaces.InvitationServiceProvider {
+				mockInvitationService := mock_interfaces.NewMockInvitationServiceProvider(ctrl)
+				mockInvitationService.EXPECT().CreateInvitation(&createInvitationReq).Times(0)
+
+				return mockInvitationService
+			}
+
+			reqBytes, err := json.Marshal(`{`)
+			Expect(err).ToNot(HaveOccurred())
+
+			responseBytes := HitEndpoint(testAPI, "POST", "/api/invitations", bytes.NewBuffer(reqBytes), http.StatusBadRequest)
+
+			var badRequestError domain.CustomBadRequestError
+			err = json.Unmarshal(responseBytes, &badRequestError)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(badRequestError.Error).To(Equal("JSON request was invalid"))
+		})
+
 		It("should return 400 Bad Request when a validation error occurs", func() {
 			testAPI.InvitationServiceFactory = func(ctx context.Context) interfaces.InvitationServiceProvider {
 				mockInvitationService := mock_interfaces.NewMockInvitationServiceProvider(ctrl)
@@ -196,7 +215,26 @@ var _ = Describe("Invitation", func() {
 			Expect(invitationList).To(Equal(invitations))
 		})
 
-		It("should return 500 Internal Server Error when an unknown service error occurs", func() {
+		It("should return 500 Internal Server Error when an unknown rsvp service error occurs", func() {
+			testAPI.RSVPServiceFactory = func(ctx context.Context) interfaces.RSVPServiceProvider {
+				mockRSVPService := mock_interfaces.NewMockRSVPServiceProvider(ctrl)
+				mockRSVPService.EXPECT().ListRSVPs().
+					Return(nil, serviceErrors.NewGeneralServiceError())
+
+				return mockRSVPService
+			}
+
+			testAPI.InvitationServiceFactory = func(ctx context.Context) interfaces.InvitationServiceProvider {
+				mockInvitationService := mock_interfaces.NewMockInvitationServiceProvider(ctrl)
+				mockInvitationService.EXPECT().ListInvitations(nil).Times(0)
+
+				return mockInvitationService
+			}
+
+			HitEndpoint(testAPI, "GET", "/api/invitations", nil, http.StatusInternalServerError)
+		})
+
+		It("should return 500 Internal Server Error when an unknown invitation service error occurs", func() {
 			testAPI.RSVPServiceFactory = func(ctx context.Context) interfaces.RSVPServiceProvider {
 				mockRSVPService := mock_interfaces.NewMockRSVPServiceProvider(ctrl)
 				mockRSVPService.EXPECT().ListRSVPs().
@@ -275,6 +313,25 @@ var _ = Describe("Invitation", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			HitEndpoint(testAPI, "PUT", "/api/invitations/2", bytes.NewBuffer(reqBytes), http.StatusBadRequest)
+		})
+
+		It("should return 400 Bad Request when invalid JSON is passed", func() {
+			testAPI.InvitationServiceFactory = func(ctx context.Context) interfaces.InvitationServiceProvider {
+				mockInvitationService := mock_interfaces.NewMockInvitationServiceProvider(ctrl)
+				mockInvitationService.EXPECT().UpdateInvitation(&updateInvitationReq).Times(0)
+
+				return mockInvitationService
+			}
+
+			reqBytes, err := json.Marshal(`{`)
+			Expect(err).ToNot(HaveOccurred())
+
+			responseBytes := HitEndpoint(testAPI, "PUT", "/api/invitations/1", bytes.NewBuffer(reqBytes), http.StatusBadRequest)
+
+			var badRequestError domain.CustomBadRequestError
+			err = json.Unmarshal(responseBytes, &badRequestError)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(badRequestError.Error).To(Equal("JSON request was invalid"))
 		})
 
 		It("should return 400 Bad Request when a validation error occurs", func() {

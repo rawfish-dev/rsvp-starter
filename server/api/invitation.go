@@ -26,7 +26,7 @@ func createInvitation(api *API) func(c *gin.Context) {
 		err := c.BindJSON(&invitationCreateRequest)
 		if err != nil {
 			ctxlogger.Errorf("invitation api - unable to create new invitation while unwrapping request due to %v", err)
-			c.AbortWithStatus(http.StatusBadRequest)
+			c.JSON(domain.NewInvalidJSONBodyError())
 			return
 		}
 
@@ -89,7 +89,7 @@ func updateInvitation(api *API) func(c *gin.Context) {
 		err := c.BindJSON(&invitationUpdateRequest)
 		if err != nil {
 			ctxlogger.Errorf("invitation api - unable to update invitation while unwrapping request due to %v", err)
-			c.AbortWithStatus(http.StatusBadRequest)
+			c.JSON(domain.NewInvalidJSONBodyError())
 			return
 		}
 

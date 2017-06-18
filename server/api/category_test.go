@@ -80,6 +80,25 @@ var _ = Describe("Category", func() {
 			Expect(newCategory).To(Equal(category))
 		})
 
+		It("should return 400 Bad Request when invalid JSON is passed", func() {
+			testAPI.CategoryServiceFactory = func(ctx context.Context) interfaces.CategoryServiceProvider {
+				mockCategoryService := mock_interfaces.NewMockCategoryServiceProvider(ctrl)
+				mockCategoryService.EXPECT().CreateCategory(&createCategoryReq).Times(0)
+
+				return mockCategoryService
+			}
+
+			reqBytes, err := json.Marshal(`{`)
+			Expect(err).ToNot(HaveOccurred())
+
+			responseBytes := HitEndpoint(testAPI, "POST", "/api/categories", bytes.NewBuffer(reqBytes), http.StatusBadRequest)
+
+			var badRequestError domain.CustomBadRequestError
+			err = json.Unmarshal(responseBytes, &badRequestError)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(badRequestError.Error).To(Equal("JSON request was invalid"))
+		})
+
 		It("should return 400 Bad Request when a validation error occurs", func() {
 			testAPI.CategoryServiceFactory = func(ctx context.Context) interfaces.CategoryServiceProvider {
 				mockCategoryService := mock_interfaces.NewMockCategoryServiceProvider(ctrl)
@@ -213,6 +232,25 @@ var _ = Describe("Category", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			HitEndpoint(testAPI, "PUT", "/api/categories/2", bytes.NewBuffer(reqBytes), http.StatusBadRequest)
+		})
+
+		It("should return 400 Bad Request when invalid JSON is passed", func() {
+			testAPI.CategoryServiceFactory = func(ctx context.Context) interfaces.CategoryServiceProvider {
+				mockCategoryService := mock_interfaces.NewMockCategoryServiceProvider(ctrl)
+				mockCategoryService.EXPECT().UpdateCategory(&updateCategoryReq).Times(0)
+
+				return mockCategoryService
+			}
+
+			reqBytes, err := json.Marshal(`{`)
+			Expect(err).ToNot(HaveOccurred())
+
+			responseBytes := HitEndpoint(testAPI, "PUT", "/api/categories/1", bytes.NewBuffer(reqBytes), http.StatusBadRequest)
+
+			var badRequestError domain.CustomBadRequestError
+			err = json.Unmarshal(responseBytes, &badRequestError)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(badRequestError.Error).To(Equal("JSON request was invalid"))
 		})
 
 		It("should return 400 Bad Request when a validation error occurs", func() {

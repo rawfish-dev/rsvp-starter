@@ -26,7 +26,7 @@ func createCategory(api *API) func(c *gin.Context) {
 		err := c.BindJSON(&categoryCreateRequest)
 		if err != nil {
 			ctxlogger.Errorf("category api - unable to create new category while unwrapping request due to %v", err)
-			c.AbortWithStatus(http.StatusBadRequest)
+			c.JSON(domain.NewInvalidJSONBodyError())
 			return
 		}
 
@@ -81,7 +81,7 @@ func updateCategory(api *API) func(c *gin.Context) {
 		err := c.BindJSON(&categoryUpdateRequest)
 		if err != nil {
 			ctxlogger.Errorf("category api - unable to update category while unwrapping request due to %v", err)
-			c.AbortWithStatus(http.StatusBadRequest)
+			c.JSON(domain.NewInvalidJSONBodyError())
 			return
 		}
 
