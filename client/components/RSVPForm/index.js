@@ -10,10 +10,6 @@ import {
   submitGuestRSVPCreate
 } from '../../actions/guest';
 
-import {
-  RSVP_PRIVATE_MODE
-} from '../../constants';
-
 import { isEmpty,isIncluded } from '../../validation';
 
 const validationValues = Object.freeze({
@@ -45,7 +41,7 @@ const validate = values => {
       errors.mobilePhoneNumber = `Please enter a mobile phone number between ${validationValues.MINIMUM_PHONE_NUMBER_LENGTH} to ${validationValues.MAXIMUM_PHONE_NUMBER_LENGTH} in length`;
   }
 
-  if ((!values.invitationPrivateID || values.invitationPrivateID == "") && isEmpty(values.reCAPTCHA)) {
+  if (isEmpty(values.reCAPTCHA)) {
     errors.reCAPTCHA = `Please click on the checkbox`;
   }
 
@@ -171,15 +167,14 @@ class RSVPForm extends Component {
 
   render() {
     const { handleSubmit, submitting } = this.props;
-    const privateForm = this.props.mode === RSVP_PRIVATE_MODE;
-    const guestGreeting = privateForm ? this.props.fields.fullName.initialValue : 'Guest';
+    const guestGreeting = this.props.fields.fullName.initialValue;
 
     return <div>
       <div className="panel">
         <div className="panel-body">
-          {privateForm && <div className="margin-bottom-xs margin-right-sm text-muted text-right">
+          <div className="margin-bottom-xs margin-right-sm text-muted text-right">
             <small>Not you? Click <a href="/">here</a> to RSVP</small>
-          </div>}
+          </div>
 
           <p className="landing-sub-title margin-top-lg margin-left-md">Dear {guestGreeting} -</p>
 
@@ -188,22 +183,20 @@ class RSVPForm extends Component {
           </div>
 
           <form className="form-horizontal margin-left-xs margin-right-sm" onSubmit={handleSubmit(submit)}>
-            {!privateForm && <Field
-                name="fullName"
-                component={fullNameInput}
-              />
-            }
+            <Field
+              name="fullName"
+              component={fullNameInput}
+            />
 
             <Field
               name="attending"
               component={attendingInput}
             />
 
-            {privateForm && <Field
-                name="guestCount"
-                component={guestCountInput}
-              />
-            }
+            <Field
+              name="guestCount"
+              component={guestCountInput}
+            />
 
             <Field
               name="specialDiet"
@@ -220,12 +213,11 @@ class RSVPForm extends Component {
               component={mobilePhoneNumberInput}
             />
 
-            {!privateForm && <Field
-                name="recaptcha"
-                component={recaptchaInput}
-                onReCAPTCHAChange={this.props.onReCAPTCHAChange}
-              />
-            }
+            <Field
+              name="recaptcha"
+              component={recaptchaInput}
+              onReCAPTCHAChange={this.props.onReCAPTCHAChange}
+            />
 
             <div className="margin-top-md margin-bottom-md">
               {this.props.operation && <Row>

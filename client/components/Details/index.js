@@ -7,13 +7,8 @@ import RSVPForm from '../RSVPForm';
 import RSVPAck from '../RSVPAck';
 
 import {
-  setRSVPMode,
-  fetchGuestRSVP
+  fetchRSVP
 } from '../../actions/guest';
-
-import {
-  RSVP_PRIVATE_MODE
-} from '../../constants';
 
 class Details extends Component {
 
@@ -30,7 +25,7 @@ class Details extends Component {
           <p className="landing-sub-title margin-top-lg">## Event Title ##</p>
 
           <Link to="details" spy={true} smooth={true} offset={50} duration={500} className="btn btn-light-rounded btn-lg margin-right-sm">Details</Link>
-          <Link to="form" spy={true} smooth={true} offset={70} duration={2200} className="btn btn-dark-rounded btn-lg">RSVP</Link>
+          {this.props.guestRSVP && <Link to="form" spy={true} smooth={true} offset={70} duration={2200} className="btn btn-dark-rounded btn-lg">RSVP</Link>}
         </div>
       </header>
 
@@ -136,7 +131,8 @@ class Details extends Component {
         </Row>
       </section>
 
-      <Element name="form">
+
+      {this.props.guestRSVP && <Element name="form">
         <section>
           <div className="rsvp-form">
             <Row className="padding-top-lg">
@@ -145,9 +141,9 @@ class Details extends Component {
                   {(() => {
                     if (this.props.guestRSVP && this.props.guestRSVP.completed) {
                       return <RSVPAck rsvp={this.props.guestRSVP} />
-                    } 
+                    }
 
-                    return <RSVPForm mode={this.props.rsvpMode} initialValues={this.props.guestRSVP} />
+                    return <RSVPForm initialValues={this.props.guestRSVP} />
                   })()}  
                 </div>
               </Col>
@@ -158,14 +154,13 @@ class Details extends Component {
             </div>
           </div>
         </section>
-      </Element>
+      </Element>}
     </div>;
   }
 }
 
 const mapStateToProps = (state) => {
   return {
-    rsvpMode: state.rsvpMode,
     guestRSVP: state.guestRSVP
   };
 };
@@ -174,8 +169,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     loadApplicationState: (id) => {
       if (id) {
-        dispatch(setRSVPMode(RSVP_PRIVATE_MODE));
-        dispatch(fetchGuestRSVP(id)); 
+        dispatch(fetchRSVP(id)); 
       }
     }
   };

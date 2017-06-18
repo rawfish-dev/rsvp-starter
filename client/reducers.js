@@ -7,7 +7,6 @@ import {
 } from './actions/general';
 
 import { 
-	SET_RSVP_MODE,
   SET_GUEST_RSVP
 } from './actions/guest';
 
@@ -48,11 +47,6 @@ import {
 	LOGOUT_SUCCESS
 } from './actions/logout';
 
-import { 
-  RSVP_PUBLIC_MODE,
-  RSVP_PRIVATE_MODE
-} from './constants';
-
 export function operation(state = null, action) {
 	switch(action.type) {
 		case SET_OPERATION_SUCCESS:
@@ -69,15 +63,6 @@ export function operation(state = null, action) {
       return null;
     default:
       return state;
-	}
-}
-
-export function rsvpMode(state = RSVP_PUBLIC_MODE, action) {
-	switch(action.type) {
-		case SET_RSVP_MODE:
-			return action.mode;
-		default:
-			return state;
 	}
 }
 
@@ -370,6 +355,6 @@ export function removeByKey(obj, deleteKey) {
     }, {});
 }
 
-const gatheredReducers = {operation, rsvpMode, guestRSVP, rsvps, categories, invitations, rsvpForm, categoryForm, invitationForm, deleteRSVPConfirmation, deleteCategoryConfirmation, deleteInvitationConfirmation, auth, form: formReducer};
+const gatheredReducers = {operation, guestRSVP, rsvps, categories, invitations, rsvpForm, categoryForm, invitationForm, deleteRSVPConfirmation, deleteCategoryConfirmation, deleteInvitationConfirmation, auth, form: formReducer};
 
 export default gatheredReducers;

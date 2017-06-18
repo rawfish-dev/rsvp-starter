@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
 )
@@ -29,12 +30,12 @@ func (a *API) InitRoutes() {
 	{
 		apiNameSpace.GET("/healthcheck", healthcheck)
 		apiNameSpace.POST("/sessions", createSession(a))
-
-		apiNameSpace.POST("/p_rsvps", guestCreateRSVP(a))
-		apiNameSpace.GET("/p_rsvps/:id", guestGetRSVP(a))
 	}
 
+	// Initialise logger for the session service
+	ctxlogger := logrus.New()
 	ctx := context.Background()
+	ctx = context.WithValue(ctx, "logger", ctxlogger)
 	apiNameSpace.Use(SessionMiddleware(a.SessionServiceFactory(ctx)))
 
 	// Auth required

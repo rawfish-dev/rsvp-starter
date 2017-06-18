@@ -1,22 +1,12 @@
 import fetch from 'isomorphic-fetch'
 
-const SET_RSVP_MODE = 'SET_RSVP_MODE'
-
 const SET_GUEST_RSVP = 'SET_GUEST_RSVP'
-
 const SET_GUEST_RSVP_CREATED = 'SET_GUEST_RSVP_CREATED'
 
 import {
   GENERIC_SERVER_ERROR,
   flashGuestOperationFailure
 } from './general'
-
-function setRSVPMode(mode) {
-	return {
-		type: SET_RSVP_MODE,
-		mode
-	}
-}
 
 /* Fetch */
 
@@ -27,21 +17,7 @@ function setGuestRSVP(rsvp) {
   }
 }
 
-const guestRSVPDefaultValues = {
-    ableToAttend: true,
-    numberAttending: 1,
-    specialDietaryRequirements: false
-}
-
-function fetchGuestRSVP(id) {
-  if (!id) {
-    return dispatch => {
-      dispatch(setGuestRSVP(guestRSVPDefaultValues))
-
-      return Promise.resolve()
-    }
-  }
-
+function fetchRSVP(id) {
 	let request = {
 		method: 'GET',
 		headers: { 
@@ -107,9 +83,7 @@ function submitGuestRSVPCreate(rsvp) {
 }
 
 module.exports = {
-  SET_RSVP_MODE,
   SET_GUEST_RSVP,
-  setRSVPMode,
-  fetchGuestRSVP,
+  fetchRSVP,
   submitGuestRSVPCreate
 }
