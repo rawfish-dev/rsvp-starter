@@ -33,6 +33,12 @@
 			"revisionTime": "2015-06-26T14:08:55Z"
 		},
 		{
+			"checksumSHA1": "JSHl8b3nI8EWvzm+uyrIqj2Hiu4=",
+			"path": "github.com/golang/mock/gomock",
+			"revision": "bd3c8e81be01eef76d4b503f5e687d2d1354d2d9",
+			"revisionTime": "2016-01-21T18:51:14Z"
+		},
+		{
 			"checksumSHA1": "NRqAI3XBi9poq+bWa8tI6ReVOh0=",
 			"path": "github.com/lib/pq",
 			"revision": "f7ea31d05cd1cccff3ba98af46ccc261d4ff3fdd",
@@ -223,12 +229,6 @@
 			"path": "github.com/satori/go.uuid",
 			"revision": "f9ab0dce87d815821e221626b772e3475a0d2749",
 			"revisionTime": "2016-03-24T11:22:44Z"
-		},
-		{
-			"checksumSHA1": "d59QO7DMLCyomtkCLHP7/UqNP4U=",
-			"path": "github.com/sfreiberg/gotwilio",
-			"revision": "f024bbefe80fdb7bcc8c43b6add05dae97744e0e",
-			"revisionTime": "2016-01-23T00:08:10Z"
 		},
 		{
 			"checksumSHA1": "vE43s37+4CJ2CDU6TlOUOYE0K9c=",
