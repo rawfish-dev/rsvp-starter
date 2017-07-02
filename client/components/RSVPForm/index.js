@@ -248,10 +248,6 @@ class RSVPForm extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    initialValues: {
-      attending: true,
-      submitting: false
-    },
     operation: state.operation
   };
 };

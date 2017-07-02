@@ -7,12 +7,82 @@ import (
 
 	"github.com/rawfish-dev/rsvp-starter/server/domain"
 	serviceErrors "github.com/rawfish-dev/rsvp-starter/server/services/errors"
+	"github.com/rawfish-dev/rsvp-starter/server/services/invitation"
 	"github.com/rawfish-dev/rsvp-starter/server/services/rsvp"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
 )
+
+func getRSVP(api *API) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		ctxlogger := logrus.New()
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, "logger", ctxlogger)
+
+		rsvpService := api.RSVPServiceFactory(ctx)
+		invitationService := api.InvitationServiceFactory(ctx)
+
+		// Only private invitations can be fetched
+		invitationPrivateID := c.Param("id")
+		if invitationPrivateID == "" {
+			ctxlogger.Warn("rsvp api - unable to retrieve private rsvp with a blank invitation private id")
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		// If a RSVP record can be found, the guest has already RSVP-ed
+		privateRSVP, err := rsvpService.RetrievePrivateRSVP(invitationPrivateID)
+		if err != nil {
+			switch err.(type) {
+			case rsvp.RSVPNotFoundError:
+
+				// In the event the RSVP cannot be found, check if the invitation exists
+				retrievedInvitation, err := invitationService.RetrieveInvitationByPrivateID(invitationPrivateID)
+				if err != nil {
+					switch err.(type) {
+					case invitation.InvitationNotFoundError:
+						c.AbortWithStatus(http.StatusNotFound)
+						return
+					}
+
+					ctxlogger.Errorf("rsvp api - unable to retrieve private rsvp due to %v", err)
+					c.AbortWithStatus(http.StatusInternalServerError)
+					return
+				}
+
+				// Invitation exists but the guest has not yet RSVP-ed
+				privateRSVP = &domain.RSVP{
+					BaseRSVP: domain.BaseRSVP{
+						FullName:          retrievedInvitation.Greeting,
+						Attending:         true,
+						GuestCount:        retrievedInvitation.MaximumGuestCount,
+						SpecialDiet:       false,
+						Remarks:           "",
+						MobilePhoneNumber: retrievedInvitation.MobilePhoneNumber,
+					},
+					InvitationPrivateID: retrievedInvitation.PrivateID,
+					Completed:           false,
+					UpdatedAt:           retrievedInvitation.UpdatedAt,
+				}
+
+				c.JSON(http.StatusOK, privateRSVP)
+				return
+			}
+
+			ctxlogger.Errorf("rsvp api - unable to retrieve private rsvp due to %v", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		// Guest has already completed the RSVP
+		privateRSVP.Completed = true
+
+		c.JSON(http.StatusOK, privateRSVP)
+		return
+	}
+}
 
 func createRSVP(api *API) func(c *gin.Context) {
 	return func(c *gin.Context) {

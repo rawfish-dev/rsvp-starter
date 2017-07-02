@@ -26,7 +26,7 @@ function fetchRSVP(id) {
 	}
 
 	return dispatch => {
-		return fetch(`/api/p_rsvps/${id}`, request)
+		return fetch(`/api/rsvps/${id}`, request)
 		.then(rawResponse => {
 			if (!rawResponse.ok) {
         dispatch(flashGuestOperationFailure(GENERIC_SERVER_ERROR))
@@ -60,7 +60,7 @@ function submitGuestRSVPCreate(rsvp) {
 	}
 
 	return dispatch => {
-		return fetch('/api/p_rsvps', request)
+		return fetch('/api/rsvps', request)
 		.then(rawResponse => {
 			if (!rawResponse.ok) {
 				dispatch(flashGuestOperationFailure(GENERIC_SERVER_ERROR))

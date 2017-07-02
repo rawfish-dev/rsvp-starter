@@ -30,6 +30,8 @@ func (a *API) InitRoutes() {
 	{
 		apiNameSpace.GET("/healthcheck", healthcheck)
 		apiNameSpace.POST("/sessions", createSession(a))
+
+		apiNameSpace.GET("/rsvps/:id", getRSVP(a))
 	}
 
 	// Initialise logger for the session service
