@@ -1,0 +1,15 @@
+postgres:
+  image: postgres:9.4
+  ports:
+    - 5432:5432
+
+server:
+  build: .
+  links:
+    - postgres:db.local
+  ports:
+    - 6001:6001
+  environment:
+    POSTGRES_URL: "postgres://postgres@db.local:5432/rsvp_starter_development"
+    HMAC_SECRET: "some_secret"
+    TOKEN_ISSUER: "some_issuer"
